@@ -1,12 +1,15 @@
-﻿using System;
+﻿using Irakur.Core.Attributes;
+using Irakur.Font.Formats.TTF.Tables;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Irakur.Font.Formats.TTF
 {
-    public enum TableType: uint
+    public enum FontTableType: uint
     {
         // Required Entries
+        [ImplementationType(typeof(CharacterToGlyphTable))]
         CharacterToGlyphMap = 0x636D6170,
         GlyphData = 0x676C7966,
         FontHeader = 0x68656164,

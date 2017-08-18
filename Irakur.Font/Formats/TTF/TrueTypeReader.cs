@@ -8,6 +8,7 @@ namespace Irakur.Font.Formats.TTF
     public class TrueTypeReader : IDisposable
     {
         private Stream BaseStream { get; }
+        private bool LeaveBaseStreamOpen = false;
 
         /* 
          * TTF Layout
@@ -26,6 +27,12 @@ namespace Irakur.Font.Formats.TTF
         public TrueTypeReader(Stream input)
         {
             this.BaseStream = input;
+        }
+
+        public TrueTypeReader(Stream input, bool leaveOpen)
+        {
+            this.BaseStream = input;
+            LeaveBaseStreamOpen = leaveOpen;
         }
 
         public int Read(byte[] buffer, int offset, int count)
@@ -98,8 +105,8 @@ namespace Irakur.Font.Formats.TTF
         {
             if(disposing)
             {
-
-                BaseStream.Dispose();
+                if(!LeaveBaseStreamOpen)
+                    BaseStream?.Dispose();
             }
         }
     }

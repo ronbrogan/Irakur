@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Irakur", "Irakur\Irakur.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Irakur.Font", "Irakur.Font\Irakur.Font.csproj", "{20BCC0DA-37C9-4A4C-98C5-563CC0E6D837}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Irakur.Core", "Irakur.Core\Irakur.Core.csproj", "{4E2596AC-4283-45D2-988A-E8A240534BF7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{20BCC0DA-37C9-4A4C-98C5-563CC0E6D837}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{20BCC0DA-37C9-4A4C-98C5-563CC0E6D837}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{20BCC0DA-37C9-4A4C-98C5-563CC0E6D837}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4E2596AC-4283-45D2-988A-E8A240534BF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E2596AC-4283-45D2-988A-E8A240534BF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E2596AC-4283-45D2-988A-E8A240534BF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E2596AC-4283-45D2-988A-E8A240534BF7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

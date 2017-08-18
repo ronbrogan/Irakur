@@ -1,4 +1,6 @@
-﻿using Irakur.Font;
+﻿using Irakur.Core.Attributes;
+using Irakur.Font;
+using Irakur.Font.Formats.TTF.Tables;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,9 +21,7 @@ namespace Irakur.Font.Formats.TTF
         private ushort SearchRange { get; set; }
         private ushort EntrySelector { get; set; }
         private ushort RangeShift { get; set; }
-
-        private Table[] Tables { get; set; }
-
+        private List<IFontTable> Tables { get; set; }
 
 
         public TrueTypeFont(Stream fontStream)
@@ -39,34 +39,79 @@ namespace Irakur.Font.Formats.TTF
             this.EntrySelector = reader.ReadUShort();
             this.RangeShift = reader.ReadUShort();
 
-            Tables = new Table[this.NumberOfTables];
+            Tables = new List<IFontTable>(this.NumberOfTables);
 
             for (var i = 0; i < this.NumberOfTables; i++)
             {
-                Tables[i] = new Table()
-                {
-                    Type = (TableType)reader.ReadULong(),
-                    Checksum = reader.ReadULong(),
-                    Offset = reader.ReadULong(),
-                    Length = reader.ReadULong()
-                };
+                // Need to read each every time to ensure that the stream
+                // is always seeked to the next table entry, fragile
+                var rawType = reader.ReadULong();
+                var checksum = reader.ReadULong();
+                var offset = reader.ReadULong();
+                var length = reader.ReadULong();
+
+                if (!Enum.IsDefined(typeof(FontTableType), rawType))
+                    continue;
+
+                var tableType = (FontTableType)rawType;
+
+                var typeAttrs = typeof(FontTableType)
+                    .GetMember(tableType.ToString())[0]
+                    .GetCustomAttributes(typeof(ImplementationTypeAttribute), false);
+
+                if (typeAttrs.Length == 0)
+                    continue;
+
+                var table = Activator.CreateInstance(((ImplementationTypeAttribute)typeAttrs[0]).type) as IFontTable;
+
+                table.Type = tableType;
+                table.Checksum = checksum;
+                table.Offset = offset;
+                table.Length = length;
+
+                Tables.Add(table);
             }
 
-            for (var i = 0; i < Tables.Length; i++)
+            foreach (var table in Tables)
             {
-                Tables[i].ReadData(reader);
+                // Read data from file
+                table.ReadData(reader);
+            }
+
+            foreach (var table in Tables)
+            {
+                // Call each table's process method
+                table.Process(font);
             }
 
             return font;
         }
 
-        public string GetVersion()
+        private string GetVersion()
         {
             reader.Seek(0);
 
             var versionBuf = reader.ReadFixed();
 
             return BitConverter.ToString(versionBuf).Replace("-", "");
+        }
+
+        private void ProcessTable(TableBase table, Font font)
+        {
+            switch(table.Type)
+            {
+
+
+                default:
+                    break;
+            }
+
+
+        }
+
+        private void ProcessCharacterToGlyphMap(TableBase table, Font font)
+        {
+
         }
 
         #region Disposable

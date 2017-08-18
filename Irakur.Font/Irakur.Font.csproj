@@ -8,4 +8,8 @@
     <Folder Include="StreamReaders\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Irakur.Core\Irakur.Core.csproj" />
+  </ItemGroup>
+
 </Project>
