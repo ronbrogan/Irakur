@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Irakur.Font;
+using System;
 
 namespace Irakur
 {
@@ -7,6 +8,15 @@ namespace Irakur
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
+
+            var fontPath = @"C:\Windows\Fonts\calibri.ttf";
+
+            var font = FontLoader.FromFile(fontPath);
+
+            Console.WriteLine(font.Version);
+
+
+            Console.ReadLine();
         }
     }
 }
