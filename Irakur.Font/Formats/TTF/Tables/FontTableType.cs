@@ -1,5 +1,6 @@
 ﻿using Irakur.Core.Attributes;
 using Irakur.Font.Formats.TTF.Tables;
+using Irakur.Font.Formats.TTF.Tables.CharacterToGlyph;
 using System;
 using System.Collections.Generic;
 using System.Text;

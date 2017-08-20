@@ -1,4 +1,5 @@
 ﻿using Irakur.Core.Attributes;
+using Irakur.Core.Extensions;
 using Irakur.Font;
 using Irakur.Font.Formats.TTF.Tables;
 using System;
@@ -45,26 +46,19 @@ namespace Irakur.Font.Formats.TTF
             {
                 // Need to read each every time to ensure that the stream
                 // is always seeked to the next table entry, fragile
-                var rawType = reader.ReadULong();
+                var type = (FontTableType)reader.ReadULong();
                 var checksum = reader.ReadULong();
                 var offset = reader.ReadULong();
                 var length = reader.ReadULong();
 
-                if (!Enum.IsDefined(typeof(FontTableType), rawType))
+                var tableType = ImplementationTypeAttribute.GetTypeFromEnumValue(typeof(FontTableType), type);
+
+                if (tableType == null)
                     continue;
 
-                var tableType = (FontTableType)rawType;
+                var table = Activator.CreateInstance(tableType) as IFontTable;
 
-                var typeAttrs = typeof(FontTableType)
-                    .GetMember(tableType.ToString())[0]
-                    .GetCustomAttributes(typeof(ImplementationTypeAttribute), false);
-
-                if (typeAttrs.Length == 0)
-                    continue;
-
-                var table = Activator.CreateInstance(((ImplementationTypeAttribute)typeAttrs[0]).type) as IFontTable;
-
-                table.Type = tableType;
+                table.Type = type;
                 table.Checksum = checksum;
                 table.Offset = offset;
                 table.Length = length;
