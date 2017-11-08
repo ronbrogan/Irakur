@@ -6,7 +6,8 @@ namespace Irakur.Font
 {
     public enum FontFormat
     {
-        TTF,
-        WOFF
+        UNUSED = 0,
+        TTF = 1,
+        WOFF = 2
     }
 }

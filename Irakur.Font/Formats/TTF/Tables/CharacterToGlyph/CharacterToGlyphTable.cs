@@ -1,4 +1,5 @@
 ﻿using Irakur.Core.Attributes;
+using Irakur.Font.Formats.TTF.Tables.CharacterToGlyph.Subtables;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,11 +14,42 @@ namespace Irakur.Font.Formats.TTF.Tables.CharacterToGlyph
         public ushort Version { get; set; }
         public ushort EncodingTableCount { get; set; }
         private List<EncodingTableEntry> EncodingTables { get; set; }
+        private Dictionary<ushort, ushort> GlyphIds { get; set; }
 
+        public List<ICharacterToGlyphSubtable> Subtables { get; set; }
 
-        public override void Process(Font font)
+        public CharacterToGlyphTable()
         {
-            reader = new TrueTypeReader(Data, true);
+            GlyphIds = new Dictionary<ushort, ushort>();
+            Subtables = new List<ICharacterToGlyphSubtable>();
+        }
+
+        public ushort GetGlyphId(ushort charCode)
+        {
+            if (GlyphIds.ContainsKey(charCode))
+                return GlyphIds[charCode];
+
+            ushort glyphId = 0;
+
+            foreach(var subtable in Subtables)
+            {
+                var retrievedValue = subtable.GetGlyphId(charCode);
+
+                if(retrievedValue != 0)
+                {
+                    glyphId = retrievedValue;
+                    break;
+                }
+            }
+
+            GlyphIds[charCode] = glyphId;
+
+            return glyphId;
+        }
+
+        public override void Process()
+        {
+            reader = new TrueTypeReader(Data);
 
             Version = reader.ReadUShort();
             EncodingTableCount = reader.ReadUShort();
@@ -44,16 +76,22 @@ namespace Irakur.Font.Formats.TTF.Tables.CharacterToGlyph
                 if (subtableProcessorType == null)
                     continue;
 
-                var subtableProcessor = Activator.CreateInstance(subtableProcessorType) as CharacterToGlyphSubtableBase;
+                var subtableProcessor = Activator.CreateInstance(subtableProcessorType) as ICharacterToGlyphSubtable;
+
+                Subtables.Add(subtableProcessor);
 
                 subtableProcessor.Process(reader, encodingTable.Offset);
             }
-
         }
 
         protected override void Dispose(bool disposing)
         {
             reader?.Dispose();
+
+            foreach(var table in Subtables)
+            {
+                table.Dispose();
+            }
 
             base.Dispose(disposing);
         }

@@ -2,6 +2,7 @@
 using Irakur.Core.Extensions;
 using Irakur.Font;
 using Irakur.Font.Formats.TTF.Tables;
+using Irakur.Font.Formats.TTF.Tables.CharacterToGlyph;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,11 +10,11 @@ using System.Text;
 
 namespace Irakur.Font.Formats.TTF
 {
-    internal class TrueTypeFont : IFontLoader, IDisposable
+    internal class TrueTypeFont : IFont
     {
-        private TrueTypeReader reader { get; }
-
-        private byte[] Version { get; set; }
+        public FontFormat Format => FontFormat.TTF;
+        public string Name { get; set; }
+        public string Version { get; set; }
 
         /*
          * TTF Specific Properties 
@@ -24,17 +25,17 @@ namespace Irakur.Font.Formats.TTF
         private ushort RangeShift { get; set; }
         private List<IFontTable> Tables { get; set; }
 
+        /*
+         * Tables
+         * */
+        internal CharacterToGlyphTable cmap { get; set; }
+        
 
         public TrueTypeFont(Stream fontStream)
         {
-            reader = new TrueTypeReader(fontStream);
-        }
+            var reader = new TrueTypeReader(fontStream);
 
-        public Font GenerateFont()
-        {
-            var font = new Font();
-
-            font.Version = GetVersion();
+            Version = GetVersion(reader);
             this.NumberOfTables = reader.ReadUShort();
             this.SearchRange = reader.ReadUShort();
             this.EntrySelector = reader.ReadUShort();
@@ -68,20 +69,32 @@ namespace Irakur.Font.Formats.TTF
 
             foreach (var table in Tables)
             {
-                // Read data from file
+                // Read data from stream into Table's internal buffer
                 table.ReadData(reader);
             }
 
-            foreach (var table in Tables)
-            {
-                // Call each table's process method
-                table.Process(font);
-            }
+            reader.Dispose();
 
-            return font;
+            ProcessTables();
         }
 
-        private string GetVersion()
+        private void ProcessTables()
+        {
+            foreach (var table in Tables)
+            {
+                // Call each table's process method to parse data
+                table.Process();
+
+                switch(table.Type)
+                {
+                    case FontTableType.CharacterToGlyphMap:
+                        cmap = (CharacterToGlyphTable)table;
+                        break;
+                }
+            }
+        }
+
+        private string GetVersion(TrueTypeReader reader)
         {
             reader.Seek(0);
 
@@ -90,40 +103,42 @@ namespace Irakur.Font.Formats.TTF
             return BitConverter.ToString(versionBuf).Replace("-", "");
         }
 
-        private void ProcessTable(TableBase table, Font font)
+        public float GetPointWidthOfChar(char c)
         {
-            switch(table.Type)
-            {
+            var glyphId = cmap.GetGlyphId((ushort)c);
 
-
-                default:
-                    break;
-            }
-
-
+            return glyphId;
         }
 
-        private void ProcessCharacterToGlyphMap(TableBase table, Font font)
-        {
-
-        }
-
-        #region Disposable
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
         {
-            if(disposing)
+            if (!disposedValue)
             {
-                reader.Dispose();
+                if (disposing)
+                {
+                    // TODO: dispose managed state (managed objects).
+                    foreach(var table in Tables)
+                    {
+                        table.Dispose();
+                    }
+                }
+
+                // TODO: set large fields to null.
+
+                disposedValue = true;
             }
         }
 
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+        }
         #endregion
     }
 }

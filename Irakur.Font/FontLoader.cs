@@ -10,16 +10,11 @@ namespace Irakur.Font
     public static class FontLoader
     {
 
-        public static Font FromFile(string path)
+        public static IFont FromFile(string path)
         {
-            var font = new Font();
-
             var fontFile = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
 
-            using (var ttfLoader = new TrueTypeFont(fontFile))
-            {
-                font = ttfLoader.GenerateFont();
-            }
+            IFont font = new TrueTypeFont(fontFile);
 
             fontFile.Dispose();
 

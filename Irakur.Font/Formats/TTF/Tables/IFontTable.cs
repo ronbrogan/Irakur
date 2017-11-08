@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Irakur.Font.Formats.TTF.Tables
 {
-    public interface IFontTable
+    public interface IFontTable : IDisposable
     {
         FontTableType Type { get; set; }
 
@@ -16,6 +14,6 @@ namespace Irakur.Font.Formats.TTF.Tables
 
         void ReadData(TrueTypeReader reader);
 
-        void Process(Font font);
+        void Process();
     }
 }

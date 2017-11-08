@@ -13,6 +13,7 @@ namespace Irakur.Font.Formats.TTF
         [ImplementationType(typeof(CharacterToGlyphTable))]
         CharacterToGlyphMap = 0x636D6170,
         GlyphData = 0x676C7966,
+
         FontHeader = 0x68656164,
         HorizontalHeader = 0x68686561,
         HorizontalMetrics = 0x686D7478,

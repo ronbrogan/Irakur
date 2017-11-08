@@ -15,6 +15,7 @@ namespace Irakur
 
             Console.WriteLine(font.Version);
 
+            Console.WriteLine(font.GetPointWidthOfChar('Z'));
 
             Console.ReadLine();
         }

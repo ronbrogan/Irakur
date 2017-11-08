@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Irakur.Font.Formats.TTF.Tables
 {
-    public abstract class TableBase : IFontTable, IDisposable
+    public abstract class TableBase : IFontTable
     {
         public FontTableType Type { get; set; }
 
@@ -15,27 +15,20 @@ namespace Irakur.Font.Formats.TTF.Tables
 
         public uint Length { get; set; }
 
-        public virtual MemoryStream Data { get; set; }
+        protected byte[] Data { get; set; }
 
-        public virtual void Process(Font font)
-        {
-            throw new NotImplementedException();
-        }
+        public abstract void Process();
 
         /// <summary>
         /// Populates the <see cref="Data"/> field from the provided reader
         /// </summary>
         public virtual void ReadData(TrueTypeReader reader)
         {
-            var buf = new byte[Length];
+            Data = new byte[Length];
 
             reader.Seek(Offset);
 
-            reader.Read(buf, 0, (int)Length);
-
-            Array.Reverse(buf);
-
-            Data = new MemoryStream(buf);
+            reader.ReadRaw(Data, 0, (int)Length);
         }
 
         #region IDisposable Support
@@ -48,10 +41,10 @@ namespace Irakur.Font.Formats.TTF.Tables
                 if (disposing)
                 {
                     // TODO: dispose managed state (managed objects).
-                    Data?.Dispose();
                 }
 
                 // TODO: set large fields to null.
+                Data = null;
 
                 disposedValue = true;
             }

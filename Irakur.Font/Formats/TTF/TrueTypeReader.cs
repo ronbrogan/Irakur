@@ -35,6 +35,11 @@ namespace Irakur.Font.Formats.TTF
             LeaveBaseStreamOpen = leaveOpen;
         }
 
+        public TrueTypeReader(byte[] data)
+        {
+            BaseStream = new MemoryStream(data);
+        }
+
         public int Read(byte[] buffer, int offset, int count)
         {
             var bytesRead = BaseStream.Read(buffer, offset, count);
@@ -44,10 +49,25 @@ namespace Irakur.Font.Formats.TTF
             return bytesRead;
         }
 
+        /// <summary>
+        /// This method calls the underlying stream's Read method without correcting endianness before returning. 
+        /// Use this method when you need to create a new TrueTypeReader with the raw data returned.
+        /// </summary>
+        /// <param name="buffer"></param>
+        /// <param name="offset"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        public int ReadRaw(byte[] buffer, int offset, int count)
+        {
+            return BaseStream.Read(buffer, offset, count);
+        }
+
         public long Seek(long offset)
         {
             return BaseStream.Seek(offset, SeekOrigin.Begin);
         }
+
+        public long Position => BaseStream.Position;
 
         public byte[] ReadFixed()
         {
