@@ -3,6 +3,9 @@ using Irakur.Core.Extensions;
 using Irakur.Font;
 using Irakur.Font.Formats.TTF.Tables;
 using Irakur.Font.Formats.TTF.Tables.CharacterToGlyph;
+using Irakur.Font.Formats.TTF.Tables.Header;
+using Irakur.Font.Formats.TTF.Tables.HorizontalHeader;
+using Irakur.Font.Formats.TTF.Tables.HorizontalMetrics;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,7 +13,7 @@ using System.Text;
 
 namespace Irakur.Font.Formats.TTF
 {
-    internal class TrueTypeFont : IFont
+    public class TrueTypeFont : IFont
     {
         public FontFormat Format => FontFormat.TTF;
         public string Name { get; set; }
@@ -29,7 +32,10 @@ namespace Irakur.Font.Formats.TTF
          * Tables
          * */
         internal CharacterToGlyphTable cmap { get; set; }
-        
+        internal HeaderTable head { get; set; }
+        internal HorizontalHeaderTable hhea { get; set; }
+        internal HorizontalMetricsTable hmtx { get; set; }
+
 
         public TrueTypeFont(Stream fontStream)
         {
@@ -80,15 +86,30 @@ namespace Irakur.Font.Formats.TTF
 
         private void ProcessTables()
         {
+            // TODO: These may need to be Processed() in a certain order, for example the horizontal metrics table
+            // 'needs' to know the number of metrics from the horizontal header table.
+            // However, it looks like the tables are listed in the proper order, so we get that for free. But that seems awfully fragile....
             foreach (var table in Tables)
             {
                 // Call each table's process method to parse data
-                table.Process();
+                table.Process(this);
 
                 switch(table.Type)
                 {
                     case FontTableType.CharacterToGlyphMap:
                         cmap = (CharacterToGlyphTable)table;
+                        break;
+
+                    case FontTableType.FontHeader:
+                        head = (HeaderTable)table;
+                        break;
+
+                    case FontTableType.HorizontalHeader:
+                        hhea = (HorizontalHeaderTable)table;
+                        break;
+
+                    case FontTableType.HorizontalMetrics:
+                        hmtx = (HorizontalMetricsTable)table;
                         break;
                 }
             }
@@ -103,11 +124,13 @@ namespace Irakur.Font.Formats.TTF
             return BitConverter.ToString(versionBuf).Replace("-", "");
         }
 
-        public float GetPointWidthOfChar(char c)
+        public ushort GetUnitWidthOfChar(char c)
         {
             var glyphId = cmap.GetGlyphId((ushort)c);
 
-            return glyphId;
+            var metric = hmtx.Metrics[glyphId];
+
+            return metric.AdvanceWidth;
         }
 
         #region IDisposable Support

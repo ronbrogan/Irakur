@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Irakur.Font.Formats.TTF.Tables
 {
-    public abstract class TableBase : IFontTable
+    public abstract class FontTableBase : IFontTable
     {
         public FontTableType Type { get; set; }
 
@@ -17,7 +17,7 @@ namespace Irakur.Font.Formats.TTF.Tables
 
         protected byte[] Data { get; set; }
 
-        public abstract void Process();
+        public abstract void Process(TrueTypeFont font);
 
         /// <summary>
         /// Populates the <see cref="Data"/> field from the provided reader

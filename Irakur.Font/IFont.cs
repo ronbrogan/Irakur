@@ -10,6 +10,6 @@ namespace Irakur.Font
 
         string Version { get; set; }
 
-        float GetPointWidthOfChar(char c);
+        ushort GetUnitWidthOfChar(char c);
     }
 }

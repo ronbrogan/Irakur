@@ -1,6 +1,9 @@
 ﻿using Irakur.Core.Attributes;
 using Irakur.Font.Formats.TTF.Tables;
 using Irakur.Font.Formats.TTF.Tables.CharacterToGlyph;
+using Irakur.Font.Formats.TTF.Tables.Header;
+using Irakur.Font.Formats.TTF.Tables.HorizontalHeader;
+using Irakur.Font.Formats.TTF.Tables.HorizontalMetrics;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -14,8 +17,11 @@ namespace Irakur.Font.Formats.TTF
         CharacterToGlyphMap = 0x636D6170,
         GlyphData = 0x676C7966,
 
+        [ImplementationType(typeof(HeaderTable))]
         FontHeader = 0x68656164,
+        [ImplementationType(typeof(HorizontalHeaderTable))]
         HorizontalHeader = 0x68686561,
+        [ImplementationType(typeof(HorizontalMetricsTable))]
         HorizontalMetrics = 0x686D7478,
         IndexToLocation = 0x6C6F6361,
         MaximumProfile = 0x6D617870,

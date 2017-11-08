@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Irakur.Font.Formats.TTF.Tables.CharacterToGlyph
 {
-    public class CharacterToGlyphTable : TableBase
+    public class CharacterToGlyphTable : FontTableBase
     {
         private TrueTypeReader reader { get; set; }
 
@@ -47,7 +47,7 @@ namespace Irakur.Font.Formats.TTF.Tables.CharacterToGlyph
             return glyphId;
         }
 
-        public override void Process()
+        public override void Process(TrueTypeFont font)
         {
             reader = new TrueTypeReader(Data);
 

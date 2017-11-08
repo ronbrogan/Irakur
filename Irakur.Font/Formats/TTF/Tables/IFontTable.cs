@@ -14,6 +14,6 @@ namespace Irakur.Font.Formats.TTF.Tables
 
         void ReadData(TrueTypeReader reader);
 
-        void Process();
+        void Process(TrueTypeFont font);
     }
 }

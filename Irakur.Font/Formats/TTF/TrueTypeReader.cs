@@ -22,6 +22,7 @@ namespace Irakur.Font.Formats.TTF
         private const int FixedBytes = 4;
         private const int FWordBytes = ShortBytes;
         private const int UFWordBytes = UShortBytes;
+        private const int LongDateTimeBytes = 8;
 
 
         public TrueTypeReader(Stream input)
@@ -112,6 +113,45 @@ namespace Irakur.Font.Formats.TTF
             Read(rawData, 0, LongBytes);
 
             return BitConverter.ToInt32(rawData, 0);
+        }
+
+        /// <summary>
+        /// Gets the quantity of FUnits
+        /// </summary>
+        /// <returns>16-bit signed int (short) indicating quantity of FUnits</returns>
+        public short ReadFWord()
+        {
+            var rawData = new byte[FWordBytes];
+
+            Read(rawData, 0, FWordBytes);
+
+            return BitConverter.ToInt16(rawData, 0);
+        }
+
+        /// <summary>
+        /// Gets the quantity of FUnits
+        /// </summary>
+        /// <returns>16-bit unsigned int (ushort) indicating quantity of FUnits</returns>
+        public ushort ReadUFWord()
+        {
+            var rawData = new byte[UFWordBytes];
+
+            Read(rawData, 0, UFWordBytes);
+
+            return BitConverter.ToUInt16(rawData, 0);
+        }
+
+        public DateTime ReadLongDateTime()
+        {
+            var rawData = new byte[LongDateTimeBytes];
+
+            Read(rawData, 0, LongDateTimeBytes);
+
+            var maxEpoch = new DateTime(1904, 1, 1);
+
+            var span = TimeSpan.FromSeconds(BitConverter.ToInt64(rawData, 0));
+
+            return maxEpoch.Add(span);
         }
 
 
