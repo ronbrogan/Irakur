@@ -11,5 +11,7 @@ namespace Irakur.Font
         string Version { get; set; }
 
         ushort GetUnitWidthOfChar(char c);
+
+        ushort GetUnitWidthOfString(string s);
     }
 }

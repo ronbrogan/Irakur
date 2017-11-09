@@ -15,7 +15,7 @@ namespace Irakur
 
             Console.WriteLine(font.Version);
 
-            Console.WriteLine(font.GetUnitWidthOfChar('Z'));
+            Console.WriteLine(font.GetUnitWidthOfString("AV"));
 
             Console.ReadLine();
         }

@@ -2,9 +2,9 @@
 
 namespace Irakur.Font.Formats.TTF.Tables
 {
-    public interface IFontTable : IDisposable
+    public interface IFontTable<TTypeEnum> : IDisposable
     {
-        FontTableType Type { get; set; }
+        TTypeEnum Type { get; set; }
 
         uint Checksum { get; set; }
 

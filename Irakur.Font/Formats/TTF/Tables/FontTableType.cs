@@ -1,12 +1,9 @@
 ﻿using Irakur.Core.Attributes;
-using Irakur.Font.Formats.TTF.Tables;
 using Irakur.Font.Formats.TTF.Tables.CharacterToGlyph;
 using Irakur.Font.Formats.TTF.Tables.Header;
 using Irakur.Font.Formats.TTF.Tables.HorizontalHeader;
 using Irakur.Font.Formats.TTF.Tables.HorizontalMetrics;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Irakur.Font.Formats.TTF.Tables.Kerning;
 
 namespace Irakur.Font.Formats.TTF
 {
@@ -36,6 +33,7 @@ namespace Irakur.Font.Formats.TTF
         FontProgram = 0x6670676D,
         GridFitScanConversionProc = 0x67617370,
         HorizontalDeviceMetrics = 0x68646D78,
+        [ImplementationType(typeof(KerningTable))]
         Kerning = 0x6B65726E,
         LinearThreshold = 0x4C545348,
         CVTProgram = 0x70726570,

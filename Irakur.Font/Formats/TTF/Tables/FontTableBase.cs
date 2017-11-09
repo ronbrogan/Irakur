@@ -5,9 +5,14 @@ using System.Text;
 
 namespace Irakur.Font.Formats.TTF.Tables
 {
-    public abstract class FontTableBase : IFontTable
+    public abstract class FontTableBase : FontTableBase<FontTableType>
     {
-        public FontTableType Type { get; set; }
+
+    }
+
+    public abstract class FontTableBase<TTypeEnum> : IFontTable<TTypeEnum>
+    {
+        public TTypeEnum Type { get; set; }
 
         public uint Checksum { get; set; }
 
@@ -20,7 +25,7 @@ namespace Irakur.Font.Formats.TTF.Tables
         public abstract void Process(TrueTypeFont font);
 
         /// <summary>
-        /// Populates the <see cref="Data"/> field from the provided reader
+        /// Populates the <see cref="Data"/> field from the provided reader. Make sure to preload <see cref="Offset"/> and <see cref="Length"/>.
         /// </summary>
         public virtual void ReadData(TrueTypeReader reader)
         {

@@ -6,6 +6,7 @@ using Irakur.Font.Formats.TTF.Tables.CharacterToGlyph;
 using Irakur.Font.Formats.TTF.Tables.Header;
 using Irakur.Font.Formats.TTF.Tables.HorizontalHeader;
 using Irakur.Font.Formats.TTF.Tables.HorizontalMetrics;
+using Irakur.Font.Formats.TTF.Tables.Kerning;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -26,7 +27,7 @@ namespace Irakur.Font.Formats.TTF
         private ushort SearchRange { get; set; }
         private ushort EntrySelector { get; set; }
         private ushort RangeShift { get; set; }
-        private List<IFontTable> Tables { get; set; }
+        private List<FontTableBase> Tables { get; set; }
 
         /*
          * Tables
@@ -35,7 +36,7 @@ namespace Irakur.Font.Formats.TTF
         internal HeaderTable head { get; set; }
         internal HorizontalHeaderTable hhea { get; set; }
         internal HorizontalMetricsTable hmtx { get; set; }
-
+        internal KerningTable kern { get; set; }
 
         public TrueTypeFont(Stream fontStream)
         {
@@ -47,7 +48,7 @@ namespace Irakur.Font.Formats.TTF
             this.EntrySelector = reader.ReadUShort();
             this.RangeShift = reader.ReadUShort();
 
-            Tables = new List<IFontTable>(this.NumberOfTables);
+            Tables = new List<FontTableBase>(this.NumberOfTables);
 
             for (var i = 0; i < this.NumberOfTables; i++)
             {
@@ -63,7 +64,7 @@ namespace Irakur.Font.Formats.TTF
                 if (tableType == null)
                     continue;
 
-                var table = Activator.CreateInstance(tableType) as IFontTable;
+                var table = Activator.CreateInstance(tableType) as FontTableBase;
 
                 table.Type = type;
                 table.Checksum = checksum;
@@ -111,6 +112,10 @@ namespace Irakur.Font.Formats.TTF
                     case FontTableType.HorizontalMetrics:
                         hmtx = (HorizontalMetricsTable)table;
                         break;
+
+                    case FontTableType.Kerning:
+                        kern = (KerningTable)table;
+                        break;
                 }
             }
         }
@@ -131,6 +136,51 @@ namespace Irakur.Font.Formats.TTF
             var metric = hmtx.Metrics[glyphId];
 
             return metric.AdvanceWidth;
+        }
+
+        public ushort GetUnitWidthOfString(string s)
+        {
+            var ids = new ushort[s.Length];
+            var metrics = new HorizontalMetric[s.Length];
+
+            for(var i = 0; i < s.Length; i++)
+            {
+                ids[i] = cmap.GetGlyphId(s[i]);
+                metrics[i] = hmtx.Metrics[ids[i]];
+            }
+
+            ushort width = 0;
+
+            foreach (var metric in metrics)
+                width += metric.AdvanceWidth;
+
+            width = width.Sum(metrics[0].LeftSideBearing);
+
+            var kerning = GetTotalKernOfString(s);
+
+            width = width.Sum(kerning);
+
+            return width;
+        }
+
+        private short GetTotalKernOfString(string s)
+        {
+            short aggregateKern = 0;
+
+            for (var i = 0; i < s.Length - 1; i++)
+            {
+                aggregateKern += GetKernUnits(s[i], s[i + 1]);
+            }
+
+            return aggregateKern;
+        }
+
+        private short GetKernUnits(char l, char r)
+        {
+            var leftId = cmap.GetGlyphId(l);
+            var rightId = cmap.GetGlyphId(r);
+
+            return kern.GetKernUnits(leftId, rightId);
         }
 
         #region IDisposable Support
