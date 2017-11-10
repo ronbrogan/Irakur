@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Irakur.Font.Formats.TTF.Tables.Kerning.Subtables
+﻿namespace Irakur.Font.Formats.TTF.Tables.Kerning.Subtables
 {
     public abstract class KerningSubtableBase : FontTableBase<KerningSubtableType>
     {

@@ -1,6 +1,5 @@
 ﻿using Irakur.Core.Attributes;
 using Irakur.Core.Extensions;
-using Irakur.Font;
 using Irakur.Font.Formats.TTF.Tables;
 using Irakur.Font.Formats.TTF.Tables.CharacterToGlyph;
 using Irakur.Font.Formats.TTF.Tables.Header;
@@ -10,7 +9,6 @@ using Irakur.Font.Formats.TTF.Tables.Kerning;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace Irakur.Font.Formats.TTF
 {
@@ -48,36 +46,31 @@ namespace Irakur.Font.Formats.TTF
             this.EntrySelector = reader.ReadUShort();
             this.RangeShift = reader.ReadUShort();
 
-            Tables = new List<FontTableBase>(this.NumberOfTables);
-
+            var tableEntries = new List<FontTableHeaderEntry>();
             for (var i = 0; i < this.NumberOfTables; i++)
             {
-                // Need to read each every time to ensure that the stream
-                // is always seeked to the next table entry, fragile
-                var type = (FontTableType)reader.ReadULong();
-                var checksum = reader.ReadULong();
-                var offset = reader.ReadULong();
-                var length = reader.ReadULong();
+                tableEntries.Add(new FontTableHeaderEntry()
+                {
+                    Type = (FontTableType)reader.ReadULong(),
+                    Checksum = reader.ReadULong(),
+                    Offset = reader.ReadULong(),
+                    Length = reader.ReadULong()
+                });
+            }
 
-                var tableType = ImplementationTypeAttribute.GetTypeFromEnumValue(typeof(FontTableType), type);
+            Tables = new List<FontTableBase>(this.NumberOfTables);
+            foreach (var entry in tableEntries)
+            {
+                var tableType = ImplementationTypeAttribute.GetTypeFromEnumValue(typeof(FontTableType), entry.Type);
 
                 if (tableType == null)
                     continue;
 
                 var table = Activator.CreateInstance(tableType) as FontTableBase;
-
-                table.Type = type;
-                table.Checksum = checksum;
-                table.Offset = offset;
-                table.Length = length;
-
+                table.HeaderEntry = entry;
+                table.Checksum = entry.Checksum;
+                table.ReadData(reader, entry.Offset, entry.Length);
                 Tables.Add(table);
-            }
-
-            foreach (var table in Tables)
-            {
-                // Read data from stream into Table's internal buffer
-                table.ReadData(reader);
             }
 
             reader.Dispose();
@@ -193,10 +186,16 @@ namespace Irakur.Font.Formats.TTF
                 if (disposing)
                 {
                     // TODO: dispose managed state (managed objects).
-                    foreach(var table in Tables)
+                    foreach(var table in this.Tables)
                     {
                         table.Dispose();
                     }
+
+                    this.cmap.Dispose();
+                    this.hhea.Dispose();
+                    this.hmtx.Dispose();
+                    this.head.Dispose();
+                    this.kern.Dispose();
                 }
 
                 // TODO: set large fields to null.

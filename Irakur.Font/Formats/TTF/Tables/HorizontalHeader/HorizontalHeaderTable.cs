@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Irakur.Font.Formats.TTF.Tables.HorizontalHeader
+﻿namespace Irakur.Font.Formats.TTF.Tables.HorizontalHeader
 {
     public class HorizontalHeaderTable : FontTableBase
     {
+        public override FontTableType Type => FontTableType.HorizontalHeader;
+
         public byte[] Version { get; set; }
         public short Ascender { get; set; }
         public short Descender { get; set; }

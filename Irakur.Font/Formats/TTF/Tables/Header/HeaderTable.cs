@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Irakur.Font.Formats.TTF.Tables.Header
 {
     public class HeaderTable : FontTableBase
     {
+        public override FontTableType Type => FontTableType.FontHeader;
+
         public byte[] Version { get; set; }
         public byte[] Revision { get; set; }
         public ulong ChecksumAdjustment { get; set; }

@@ -6,6 +6,7 @@ namespace Irakur.Font.Formats.TTF.Tables.CharacterToGlyph
 {
     public class CharacterToGlyphTable : FontTableBase
     {
+        public override FontTableType Type => FontTableType.CharacterToGlyphMap;
         public ushort Version { get; set; }
         public ushort EncodingTableCount { get; set; }
         private List<EncodingTableEntry> EncodingTables { get; set; }
@@ -73,14 +74,10 @@ namespace Irakur.Font.Formats.TTF.Tables.CharacterToGlyph
                     continue;
 
                 var subtableProcessor = Activator.CreateInstance(subtableProcessorType) as CharacterToGlyphSubtableBase;
-                subtableProcessor.Type = format;
-                subtableProcessor.Length = length;
-                subtableProcessor.Offset = encodingTable.Offset;
                 subtableProcessor.EncodingTableEntry = encodingTable;
-                subtableProcessor.ReadData(reader);
-                Subtables.Add(subtableProcessor);
+                subtableProcessor.ReadData(reader, encodingTable.Offset, length);
 
-                subtableProcessor.ReadData(reader);
+                Subtables.Add(subtableProcessor);
             }
 
             ProcessSubtables(font);

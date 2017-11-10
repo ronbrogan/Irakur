@@ -1,39 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-
-namespace Irakur.Font.Formats.TTF.Tables
+﻿namespace Irakur.Font.Formats.TTF.Tables
 {
     public abstract class FontTableBase : FontTableBase<FontTableType>
     {
-
+        public FontTableHeaderEntry HeaderEntry { get; set; }
     }
 
     public abstract class FontTableBase<TTypeEnum> : IFontTable<TTypeEnum>
     {
-        public virtual TTypeEnum Type { get; set; }
+        public abstract TTypeEnum Type { get; }
 
         public uint Checksum { get; set; }
-
-        public uint Offset { get; set; }
-
-        public uint Length { get; set; }
 
         protected byte[] Data { get; set; }
 
         public abstract void Process(TrueTypeFont font);
 
         /// <summary>
-        /// Populates the <see cref="Data"/> field from the provided reader. Make sure to preload <see cref="Offset"/> and <see cref="Length"/>.
+        /// Populates the <see cref="Data"/> field from the provided reader.
         /// </summary>
-        public virtual void ReadData(TrueTypeReader reader)
+        public virtual void ReadData(TrueTypeReader reader, uint offset, uint length)
         {
-            Data = new byte[Length];
+            Data = new byte[length];
 
-            reader.Seek(Offset);
+            reader.Seek(offset);
 
-            reader.ReadRaw(Data, 0, (int)Length);
+            reader.ReadRaw(Data, 0, (int)length);
         }
 
         #region IDisposable Support

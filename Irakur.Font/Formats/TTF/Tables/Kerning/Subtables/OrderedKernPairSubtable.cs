@@ -5,6 +5,8 @@ namespace Irakur.Font.Formats.TTF.Tables.Kerning.Subtables
 {
     public class OrderedKernPairSubtable : KerningSubtableBase
     {
+        public override KerningSubtableType Type => KerningSubtableType.OrderedKernPairs;
+
         public ushort NumberOfPairs { get; set; }
         private ushort SearchRange { get; set; }
         private ushort EntrySelector { get; set; }
@@ -15,27 +17,25 @@ namespace Irakur.Font.Formats.TTF.Tables.Kerning.Subtables
 
         private Dictionary<uint, short> Kernpairs { get; set; }
 
-        public override void ReadData(TrueTypeReader reader)
+        public override void ReadData(TrueTypeReader reader, uint offset, uint length)
         {
             // This weirdness is because some fonts have a malformed subtable header that lists the length incorrectly.
             // The actual length can be calculated by peaking the number of kern pairs, and calculating it back.
 
-            reader.Seek(Offset);
+            reader.Seek(offset);
 
             var version = reader.ReadUShort();
-            var length = reader.ReadUShort();
+            var len = reader.ReadUShort();
             var coverage = reader.ReadUShort();
 
             var numberOfPairs = reader.ReadUShort();
             var kernpairLength = numberOfPairs * BytesPerKernpair;
             var calculatedLength = kernpairLength + BytesInHeader;
 
-            if (calculatedLength != length)
+            if (calculatedLength != len)
                 Debug.WriteLine("ERROR: Detected kern subtable length does not match specified value. Using detected value.");
 
-            Length = (uint)calculatedLength;
-
-            base.ReadData(reader);
+            base.ReadData(reader, offset, (uint)calculatedLength);
         }
 
         public override void Process(TrueTypeFont font)

@@ -4,15 +4,11 @@ namespace Irakur.Font.Formats.TTF.Tables
 {
     public interface IFontTable<TTypeEnum> : IDisposable
     {
-        TTypeEnum Type { get; set; }
+        TTypeEnum Type { get; }
 
         uint Checksum { get; set; }
 
-        uint Offset { get; set; }
-
-        uint Length { get; set; }
-
-        void ReadData(TrueTypeReader reader);
+        void ReadData(TrueTypeReader reader, uint offset, uint length);
 
         void Process(TrueTypeFont font);
     }

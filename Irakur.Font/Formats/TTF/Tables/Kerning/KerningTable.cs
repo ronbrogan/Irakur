@@ -8,6 +8,8 @@ namespace Irakur.Font.Formats.TTF.Tables.Kerning
 {
     public class KerningTable : FontTableBase
     {
+        public override FontTableType Type => FontTableType.Kerning;
+
         public ushort Version { get; set; }
         public ushort NumberOfTables { get; set; }
 
@@ -32,9 +34,7 @@ namespace Irakur.Font.Formats.TTF.Tables.Kerning
                 var subtableType = ImplementationTypeAttribute.GetTypeFromEnumValue(typeof(KerningSubtableType), GetSubtypeFromCoverage(coverage));
 
                 var subtable = Activator.CreateInstance(subtableType) as KerningSubtableBase;
-                subtable.Offset = (uint)subtableOffset;
-                subtable.Length = length;
-                subtable.ReadData(reader);
+                subtable.ReadData(reader, (uint)subtableOffset, length);
 
                 Subtables.Add(subtable);
             }
@@ -69,7 +69,6 @@ namespace Irakur.Font.Formats.TTF.Tables.Kerning
             foreach (var subtable in Subtables)
             {
                 subtable.Process(font);
-
             }
         }
     }

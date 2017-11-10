@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Irakur.Core.Extensions
+﻿namespace Irakur.Core.Extensions
 {
     public static class IntegerExtensions
     {

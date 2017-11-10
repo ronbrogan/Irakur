@@ -1,7 +1,4 @@
 ﻿using Irakur.Core.Attributes;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Irakur.Font.Formats.TTF.Tables.CharacterToGlyph
 {

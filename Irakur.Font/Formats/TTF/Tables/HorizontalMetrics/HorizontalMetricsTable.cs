@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Irakur.Font.Formats.TTF.Tables.HorizontalMetrics
 {
     public class HorizontalMetricsTable : FontTableBase
     {
+        public override FontTableType Type => FontTableType.HorizontalMetrics;
+
         public HorizontalMetric[] Metrics { get; set; }
 
         public override void Process(TrueTypeFont font)

@@ -41,6 +41,5 @@ namespace Irakur.Font.Formats.TTF
         VerticalDeviceMetrics = 0x56444D58,
         VerticalMetricsHeader = 0x76686561,
         VerticalMetrics = 0x766D7478
-
     }
 }
