@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Irakur.Font.Formats.TTF.Tables.CharacterToGlyph
 {
-    public enum SubtableFormat : ushort
+    public enum CmapSubtableType : ushort
     {
         Apple = 0,
         Highbyte = 2,

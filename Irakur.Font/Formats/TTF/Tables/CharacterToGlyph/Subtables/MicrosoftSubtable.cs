@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Irakur.Font.Formats.TTF.Tables.CharacterToGlyph
+﻿namespace Irakur.Font.Formats.TTF.Tables.CharacterToGlyph
 {
     public class MicrosoftSubtable : CharacterToGlyphSubtableBase
     {
+        public override CmapSubtableType Type => CmapSubtableType.Microsoft;
+
         public ushort DoubleSegCount { get; set; }
         public ushort SegCount => (ushort)(DoubleSegCount / 2);
         public ushort SearchRange { get; set; }
@@ -18,9 +16,13 @@ namespace Irakur.Font.Formats.TTF.Tables.CharacterToGlyph
         public ushort[] IdRangeOffsets { get; set; }
         public long[] IdRangeOffsetPositions { get; set; }
 
-        public override void Process(TrueTypeReader reader, uint offset)
+        public override void Process(TrueTypeFont font)
         {
-            base.Process(reader, offset);
+            var reader = new TrueTypeReader(Data);
+
+            var format = reader.ReadUShort();
+            var length = reader.ReadUShort();
+            var version = reader.ReadUShort();
 
             DoubleSegCount = reader.ReadUShort();
             SearchRange = reader.ReadUShort();
@@ -28,7 +30,7 @@ namespace Irakur.Font.Formats.TTF.Tables.CharacterToGlyph
             RangeShift = reader.ReadUShort();
 
             EndCounts = new ushort[SegCount];
-            for(var i = 0; i < SegCount; i++)
+            for (var i = 0; i < SegCount; i++)
             {
                 EndCounts[i] = reader.ReadUShort();
             }
@@ -51,9 +53,11 @@ namespace Irakur.Font.Formats.TTF.Tables.CharacterToGlyph
             IdRangeOffsetPositions = new long[SegCount];
             for (var i = 0; i < SegCount; i++)
             {
-                IdRangeOffsetPositions[i] = reader.Position - offset;
+                IdRangeOffsetPositions[i] = reader.Position;
                 IdRangeOffsets[i] = reader.ReadUShort();
             }
+
+            reader.Dispose();
         }
 
         public override ushort GetGlyphId(ushort charCode)
@@ -120,5 +124,7 @@ namespace Irakur.Font.Formats.TTF.Tables.CharacterToGlyph
 
             return glyphId;
         }
+
+        
     }
 }

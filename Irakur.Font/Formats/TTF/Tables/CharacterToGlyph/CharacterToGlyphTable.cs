@@ -1,27 +1,22 @@
 ﻿using Irakur.Core.Attributes;
-using Irakur.Font.Formats.TTF.Tables.CharacterToGlyph.Subtables;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
 
 namespace Irakur.Font.Formats.TTF.Tables.CharacterToGlyph
 {
     public class CharacterToGlyphTable : FontTableBase
     {
-        private TrueTypeReader reader { get; set; }
-
         public ushort Version { get; set; }
         public ushort EncodingTableCount { get; set; }
         private List<EncodingTableEntry> EncodingTables { get; set; }
         private Dictionary<ushort, ushort> GlyphIds { get; set; }
 
-        public List<ICharacterToGlyphSubtable> Subtables { get; set; }
+        public List<CharacterToGlyphSubtableBase> Subtables { get; set; }
 
         public CharacterToGlyphTable()
         {
             GlyphIds = new Dictionary<ushort, ushort>();
-            Subtables = new List<ICharacterToGlyphSubtable>();
+            Subtables = new List<CharacterToGlyphSubtableBase>();
         }
 
         public ushort GetGlyphId(ushort charCode)
@@ -49,7 +44,7 @@ namespace Irakur.Font.Formats.TTF.Tables.CharacterToGlyph
 
         public override void Process(TrueTypeFont font)
         {
-            reader = new TrueTypeReader(Data);
+            var reader = new TrueTypeReader(Data);
 
             Version = reader.ReadUShort();
             EncodingTableCount = reader.ReadUShort();
@@ -69,24 +64,39 @@ namespace Irakur.Font.Formats.TTF.Tables.CharacterToGlyph
             {
                 reader.Seek(encodingTable.Offset);
 
-                var subType = (SubtableFormat)reader.ReadUShort();
+                var format = (CmapSubtableType)reader.ReadUShort();
+                var length = reader.ReadUShort();
 
-                var subtableProcessorType = ImplementationTypeAttribute.GetTypeFromEnumValue(typeof(SubtableFormat), subType);
+                var subtableProcessorType = ImplementationTypeAttribute.GetTypeFromEnumValue(typeof(CmapSubtableType), format);
 
                 if (subtableProcessorType == null)
                     continue;
 
-                var subtableProcessor = Activator.CreateInstance(subtableProcessorType) as ICharacterToGlyphSubtable;
-
+                var subtableProcessor = Activator.CreateInstance(subtableProcessorType) as CharacterToGlyphSubtableBase;
+                subtableProcessor.Type = format;
+                subtableProcessor.Length = length;
+                subtableProcessor.Offset = encodingTable.Offset;
+                subtableProcessor.EncodingTableEntry = encodingTable;
+                subtableProcessor.ReadData(reader);
                 Subtables.Add(subtableProcessor);
 
-                subtableProcessor.Process(reader, encodingTable.Offset);
+                subtableProcessor.ReadData(reader);
             }
+
+            ProcessSubtables(font);
+
+            reader.Dispose();
+        }
+
+        private void ProcessSubtables(TrueTypeFont font)
+        {
+            foreach (var subtable in Subtables)
+                subtable.Process(font);
         }
 
         protected override void Dispose(bool disposing)
         {
-            reader?.Dispose();
+            GlyphIds = null;
 
             foreach(var table in Subtables)
             {

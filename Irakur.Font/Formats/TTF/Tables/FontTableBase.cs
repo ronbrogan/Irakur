@@ -12,7 +12,7 @@ namespace Irakur.Font.Formats.TTF.Tables
 
     public abstract class FontTableBase<TTypeEnum> : IFontTable<TTypeEnum>
     {
-        public TTypeEnum Type { get; set; }
+        public virtual TTypeEnum Type { get; set; }
 
         public uint Checksum { get; set; }
 
