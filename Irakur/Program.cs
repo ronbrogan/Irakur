@@ -9,13 +9,13 @@ namespace Irakur
         {
             Console.WriteLine("Hello World!");
 
-            var fontPath = @"C:\Windows\Fonts\calibri.ttf";
+            var fontPath = @"C:\Windows\Fonts\Calibri.ttf";
 
             var font = FontLoader.FromFile(fontPath);
 
             Console.WriteLine(font.Version);
 
-            Console.WriteLine(font.GetUnitWidthOfString("AV"));
+            Console.WriteLine(font.GetPixelWidthOfString("Abcdefg", 12));
 
             Console.ReadLine();
         }

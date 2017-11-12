@@ -66,7 +66,12 @@ namespace Irakur.Font.Formats.TTF.Tables.Kerning.Subtables
 
         public override short GetKerning(ushort left, ushort right)
         {
-            return Kernpairs[(uint)((left << 16) | right)];
+            var glyphKey = (uint)((left << 16) | right);
+
+            if (Kernpairs.ContainsKey(glyphKey))
+                return Kernpairs[glyphKey];
+
+            return 0;
         }
     }
 }

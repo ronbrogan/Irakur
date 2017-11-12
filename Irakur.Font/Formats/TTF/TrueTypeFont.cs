@@ -2,10 +2,13 @@
 using Irakur.Core.Extensions;
 using Irakur.Font.Formats.TTF.Tables;
 using Irakur.Font.Formats.TTF.Tables.CharacterToGlyph;
+using Irakur.Font.Formats.TTF.Tables.Glyph;
 using Irakur.Font.Formats.TTF.Tables.Header;
 using Irakur.Font.Formats.TTF.Tables.HorizontalHeader;
 using Irakur.Font.Formats.TTF.Tables.HorizontalMetrics;
+using Irakur.Font.Formats.TTF.Tables.IndexToLocation;
 using Irakur.Font.Formats.TTF.Tables.Kerning;
+using Irakur.Font.Formats.TTF.Tables.MaximumProfile;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -35,6 +38,9 @@ namespace Irakur.Font.Formats.TTF
         internal HorizontalHeaderTable hhea { get; set; }
         internal HorizontalMetricsTable hmtx { get; set; }
         internal KerningTable kern { get; set; }
+        internal MaximumProfileTable maxp { get; set; }
+        internal IndexToLocationTable loca { get; set; }
+        internal GlyphTable glyf { get; set; }
 
         public TrueTypeFont(Stream fontStream)
         {
@@ -109,6 +115,18 @@ namespace Irakur.Font.Formats.TTF
                     case FontTableType.Kerning:
                         kern = (KerningTable)table;
                         break;
+
+                    case FontTableType.MaximumProfile:
+                        maxp = (MaximumProfileTable)table;
+                        break;
+
+                    case FontTableType.IndexToLocation:
+                        loca = (IndexToLocationTable)table;
+                        break;
+
+                    case FontTableType.GlyphData:
+                        glyf = (GlyphTable)table;
+                        break;
                 }
             }
         }
@@ -135,25 +153,61 @@ namespace Irakur.Font.Formats.TTF
         {
             var ids = new ushort[s.Length];
             var metrics = new HorizontalMetric[s.Length];
+            var rsbs = new ushort[s.Length];
 
             for(var i = 0; i < s.Length; i++)
             {
                 ids[i] = cmap.GetGlyphId(s[i]);
                 metrics[i] = hmtx.Metrics[ids[i]];
+                var glyphData = glyf.GetGlyphData(ids[i]);
+
+                rsbs[i] = (ushort)(metrics[i].AdvanceWidth - (metrics[i].LeftSideBearing + glyphData.XMax - glyphData.XMin));
             }
 
             ushort width = 0;
 
-            foreach (var metric in metrics)
-                width += metric.AdvanceWidth;
-
-            width = width.Sum(metrics[0].LeftSideBearing);
-
+            for (var i = 0; i < s.Length; i++)
+            {
+                width += metrics[i].AdvanceWidth;
+                width = width.Sum(metrics[i].LeftSideBearing);
+                width += rsbs[i];
+            }
+            
             var kerning = GetTotalKernOfString(s);
 
             width = width.Sum(kerning);
 
             return width;
+        }
+
+        public float GetEmWidthOfString(string s, float em = 1)
+        {
+            var units = GetUnitWidthOfString(s);
+
+            return UnitsToEm(units) * em;
+        }
+
+        public float GetPointWidthOfString(string s, float point)
+        {
+            var units = GetUnitWidthOfString(s);
+
+            var ems = UnitsToEm(units) * FontUnitConverter.PointsToEm(point);
+
+            return FontUnitConverter.EmToPoints(ems);
+        }
+
+        public float GetPixelWidthOfString(string s, float point)
+        {
+            var units = GetUnitWidthOfString(s);
+
+            var ems = UnitsToEm(units) * FontUnitConverter.PointsToEm(point);
+
+            return FontUnitConverter.EmToPixels(ems);
+        }
+
+        public float UnitsToEm(uint units)
+        {
+            return (units / (float)head.UnitsPerEm);
         }
 
         private short GetTotalKernOfString(string s)

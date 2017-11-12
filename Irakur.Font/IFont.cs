@@ -13,5 +13,13 @@ namespace Irakur.Font
         ushort GetUnitWidthOfChar(char c);
 
         ushort GetUnitWidthOfString(string s);
+
+        float GetEmWidthOfString(string s, float em);
+
+        float GetPointWidthOfString(string s, float point);
+
+        float GetPixelWidthOfString(string s, float point);
+
+        float UnitsToEm(uint units);
     }
 }

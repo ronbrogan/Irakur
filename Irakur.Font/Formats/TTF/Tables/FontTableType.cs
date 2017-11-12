@@ -1,9 +1,12 @@
 ﻿using Irakur.Core.Attributes;
 using Irakur.Font.Formats.TTF.Tables.CharacterToGlyph;
+using Irakur.Font.Formats.TTF.Tables.Glyph;
 using Irakur.Font.Formats.TTF.Tables.Header;
 using Irakur.Font.Formats.TTF.Tables.HorizontalHeader;
 using Irakur.Font.Formats.TTF.Tables.HorizontalMetrics;
+using Irakur.Font.Formats.TTF.Tables.IndexToLocation;
 using Irakur.Font.Formats.TTF.Tables.Kerning;
+using Irakur.Font.Formats.TTF.Tables.MaximumProfile;
 
 namespace Irakur.Font.Formats.TTF
 {
@@ -12,15 +15,17 @@ namespace Irakur.Font.Formats.TTF
         // Required Entries
         [ImplementationType(typeof(CharacterToGlyphTable))]
         CharacterToGlyphMap = 0x636D6170,
+        [ImplementationType(typeof(GlyphTable))]
         GlyphData = 0x676C7966,
-
         [ImplementationType(typeof(HeaderTable))]
         FontHeader = 0x68656164,
         [ImplementationType(typeof(HorizontalHeaderTable))]
         HorizontalHeader = 0x68686561,
         [ImplementationType(typeof(HorizontalMetricsTable))]
         HorizontalMetrics = 0x686D7478,
+        [ImplementationType(typeof(IndexToLocationTable))]
         IndexToLocation = 0x6C6F6361,
+        [ImplementationType(typeof(MaximumProfileTable))]
         MaximumProfile = 0x6D617870,
         NamingTable = 0x6E616D65,
         PostScripInfo = 0x706F7374,
