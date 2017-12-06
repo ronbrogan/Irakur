@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.3
+VisualStudioVersion = 15.0.26730.15
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Irakur", "Irakur\Irakur.csproj", "{7D870E7C-7150-4D92-A723-234155AB6980}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Irakur", "Irakur\Irakur.csproj", "{7D870E7C-7150-4D92-A723-234155AB6980}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Irakur.Font", "Irakur.Font\Irakur.Font.csproj", "{20BCC0DA-37C9-4A4C-98C5-563CC0E6D837}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Irakur.Font", "Irakur.Font\Irakur.Font.csproj", "{20BCC0DA-37C9-4A4C-98C5-563CC0E6D837}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Irakur.Core", "Irakur.Core\Irakur.Core.csproj", "{4E2596AC-4283-45D2-988A-E8A240534BF7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Irakur.Core", "Irakur.Core\Irakur.Core.csproj", "{4E2596AC-4283-45D2-988A-E8A240534BF7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Irakur.Pdf", "Irakur.Pdf\Irakur.Pdf.csproj", "{47064D04-0793-47E0-8BD3-9D1015A30DD8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{4E2596AC-4283-45D2-988A-E8A240534BF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4E2596AC-4283-45D2-988A-E8A240534BF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4E2596AC-4283-45D2-988A-E8A240534BF7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{47064D04-0793-47E0-8BD3-9D1015A30DD8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47064D04-0793-47E0-8BD3-9D1015A30DD8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47064D04-0793-47E0-8BD3-9D1015A30DD8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47064D04-0793-47E0-8BD3-9D1015A30DD8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
