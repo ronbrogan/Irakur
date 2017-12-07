@@ -13,5 +13,6 @@ namespace Irakur.Pdf.Infrastructure
         ContentStream       = 4,
         Font                = 5,
         Resources           = 6,
+        Name                = 7
     }
 }

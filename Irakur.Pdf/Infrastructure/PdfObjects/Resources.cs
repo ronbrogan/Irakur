@@ -9,6 +9,6 @@ namespace Irakur.Pdf.Infrastructure.PdfObjects
 
         public override PdfObjectType Type => PdfObjectType.Resources;
 
-        public Font Font { get; set; }
+        public List<Font> Fonts { get; set; }
     }
 }

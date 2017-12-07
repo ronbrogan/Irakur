@@ -3,6 +3,7 @@ using Irakur.Pdf.Infrastructure.Core;
 using Irakur.Pdf.Infrastructure.IO;
 using Irakur.Pdf.Infrastructure.PdfObjects;
 using Irakur.Pdf.Infrastructure.Serialization;
+using Irakur.Pdf.Infrastructure.Text;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -78,20 +79,24 @@ namespace Irakur.Pdf.Infrastructure
                 {
                     Resources = new Resources()
                     {
-                        Font = new Font(this)
-                        {
-
-                        }
-
+                        Fonts = new List<Font>()
                     },
                     Parent = pageNode
                 };
 
                 underlyingPage.Contents = new ContentStream(this)
                 {
-                    Parent = underlyingPage,
-                    Data = "( test ) Tj"
+                    Parent = underlyingPage
                 };
+
+                underlyingPage.Contents.TextContent.AddRange(page.TextContent);
+
+
+                foreach(var text in underlyingPage.Contents.TextContent)
+                {
+                    // TODO: make sure these are unique
+                    underlyingPage.Resources.Fonts.Add(text.Font);
+                }
 
                 pageNode.Kids.Add(underlyingPage);
             }

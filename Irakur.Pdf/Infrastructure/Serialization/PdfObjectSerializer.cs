@@ -36,10 +36,8 @@ namespace Irakur.Pdf.Infrastructure.Serialization
 
             dicSerializer.Start(PdfObjectType.Font);
 
-            dicSerializer.WriteRaw("Subtype", "/Type1");
-            dicSerializer.WriteRaw("Name", "/F1");
-            dicSerializer.WriteRaw("BaseFont", "/Helvetica");
-            dicSerializer.WriteRaw("Encoding", "/WinAnsiEncoding");
+            dicSerializer.WriteName("Subtype", new Name(font.Subtype));
+            dicSerializer.WriteName("BaseFont", font.BaseFont);
 
             dicSerializer.End();
 
@@ -61,18 +59,26 @@ namespace Irakur.Pdf.Infrastructure.Serialization
 
         private static string SerializeObject(ContentStream obj)
         {
+            var streamData = new StringBuilder();
+            foreach(var text in obj.TextContent)
+            {
+                streamData.AppendLine(PdfTokens.Text.Begin);
+                streamData.AppendLine($"{text.FillColor.Red} {text.FillColor.Green} {text.FillColor.Blue} {PdfTokens.Graphics.Color.Operators.SetFillRGB}");
+                streamData.AppendLine($"/{ResourceReference(text.Font.Id)} {text.FontSize} {PdfTokens.Text.StateOperators.FontSize}");
+                streamData.AppendLine($"{text.Rectangle.X} {text.Rectangle.Y} {PdfTokens.Text.PositioningOperators.MoveFromCurrent}");
+                streamData.AppendLine($"( {text.Text} ) {PdfTokens.Text.ShowingOperators.Show}");
+                streamData.AppendLine(PdfTokens.Text.End);
+            }
+            var streamContents = streamData.ToString();
+
             var sb = new StringBuilder();
-            sb.AppendLine(
-                $@"<< /Length 81 >>
-stream
-2 J
-BT
-0 0 0 rg
-/F1 0027 Tf
-57.3750 722.2800 Td
-( A Test PDF File ) Tj
-ET
-endstream");
+            var dicSerializer = new PdfDictionarySerializer(sb);
+            dicSerializer.Start();
+            dicSerializer.WriteRaw("Length", streamContents.Length);
+            dicSerializer.End();
+            sb.AppendLine(PdfTokens.Stream.Start);
+            sb.Append(streamContents);
+            sb.AppendLine(PdfTokens.Stream.End);
 
             return sb.ToString();
         }
@@ -139,17 +145,25 @@ endstream");
             var dicSerializer = new PdfDictionarySerializer(sb);
             dicSerializer.Start();
 
-            if (resources.Font != null)
+            if (resources.Fonts?.Count > 0)
             {
                 sb.AppendLine("/Font <<");
-                var fontRef = resources.Font.GetReference();
-                dicSerializer.WriteReference("F1", fontRef);
+                for (var i = 0; i < resources.Fonts.Count; i++)
+                {
+                    var fontRef = resources.Fonts[i].GetReference();
+                    dicSerializer.WriteReference($"{ResourceReference(resources.Fonts[i].Id)}", fontRef);
+                }
                 sb.AppendLine(">>");
             }
 
             dicSerializer.End();
 
             return sb.ToString();
+        }
+
+        private static string ResourceReference(Guid id)
+        {
+            return id.ToString().Replace("-", string.Empty);
         }
 
         internal static string SerializeXrefTable(XrefTable xrefTable)

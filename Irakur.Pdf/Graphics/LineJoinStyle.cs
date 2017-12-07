@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Irakur.Pdf.Infrastructure.Graphics
+namespace Irakur.Pdf.Graphics
 {
     public enum LineJoinStyle
     {

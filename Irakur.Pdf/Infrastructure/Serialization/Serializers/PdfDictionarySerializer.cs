@@ -34,9 +34,9 @@ namespace Irakur.Pdf.Infrastructure.Serialization.Serializers
             sb.AppendLine($"/{key} {value.ToString()}");
         }
 
-        public void WriteName(string key, string value)
+        public void WriteName(string key, Name name)
         {
-            sb.AppendLine($"/{key} /{value}");
+            sb.AppendLine($"/{key} /{name}");
         }
 
         public void WriteReference(string key, IndirectReference reference)

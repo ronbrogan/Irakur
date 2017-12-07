@@ -6,14 +6,15 @@ namespace Irakur.Pdf.Infrastructure.PdfObjects
 {
     public class ContentStream : PdfObject
     {
-        public ContentStream(UnderlyingPdf doc) : base(doc)
-        {
-        }
+        public override PdfObjectType Type => PdfObjectType.ContentStream;
 
         public Page Parent { get; set; }
 
-        public object Data { get; set; }
+        public List<TextContent> TextContent { get; set; }
 
-        public override PdfObjectType Type => PdfObjectType.ContentStream;
+        public ContentStream(UnderlyingPdf doc) : base(doc)
+        {
+            this.TextContent = new List<TextContent>();
+        }
     }
 }

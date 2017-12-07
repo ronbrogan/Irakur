@@ -8,7 +8,7 @@ namespace Irakur.Pdf
 {
     public class PdfDocument
     {
-        private UnderlyingPdf underlyingPdf;
+        internal UnderlyingPdf underlyingPdf;
 
         public List<PdfPage> Pages { get; set; }
 

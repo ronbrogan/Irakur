@@ -1,6 +1,8 @@
 ﻿using Irakur.Core.CoordinateSystem;
 using Irakur.Font;
 using Irakur.Pdf;
+using Irakur.Pdf.Infrastructure.Text;
+using Irakur.Pdf.Text;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -26,12 +28,20 @@ namespace Irakur
             doc.Pages.Add(new PdfPage()
             {
                 TextContent = new List<TextContent>()
-                {
+                {   
                     new TextContent()
                     {
-                        FontName = "Helvetica",
-                        Rectangle = new Rectangle(300, 300, 150),
-                        Text = "This is a test"
+                        Font = FontFactory.Standard(StandardFont.Helvetica, doc),
+                        Rectangle = new Rectangle(36, 750, 150),
+                        Text = "This is a test PDF used for demoing features of Irakur.Pdf"
+                    },
+                    new TextContent()
+                    {
+                        Font = FontFactory.Standard(StandardFont.Symbol, doc),
+                        Rectangle = new Rectangle(36, 720, 150),
+                        Text = "These are purple/pink symbols!",
+                        FillColor = new Pdf.Graphics.RgbColor(255, 0, 127),
+                        FontSize = 27
                     }
                 }
             });
