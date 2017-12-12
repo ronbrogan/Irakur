@@ -8,9 +8,9 @@ namespace Irakur.Pdf.Infrastructure.Text
 {
     public class FontFactory
     {
-        public static Font Standard(StandardFont font, PdfDocument doc)
+        public static Font Standard(StandardFont font)
         {
-            return new Font(doc.underlyingPdf)
+            return new Font()
             {
                 Subtype = PdfFontType.Type1,
                 BaseFont = new Name(font)

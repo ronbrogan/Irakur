@@ -6,7 +6,7 @@ namespace Irakur.Pdf.Infrastructure.PdfObjects
 {
     public class PageNode : PdfObject
     {
-        public PageNode(UnderlyingPdf doc) : base(doc)
+        public PageNode() : base(true)
         {
             Kids = new List<Page>();
         }

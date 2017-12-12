@@ -2,6 +2,7 @@
 using Irakur.Pdf.Infrastructure.PdfObjects;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Irakur.Pdf.Infrastructure.Collections

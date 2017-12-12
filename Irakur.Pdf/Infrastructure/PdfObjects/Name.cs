@@ -11,12 +11,11 @@ namespace Irakur.Pdf.Infrastructure.PdfObjects
 
         public override PdfObjectType Type => PdfObjectType.Name;
 
-        public Name(string name)
+        public Name(string name) : base(false)
         {
-
         }
 
-        public Name(Enum enumValue)
+        public Name(Enum enumValue) : base(false)
         {
             this.name = enumValue.ToString();
         }

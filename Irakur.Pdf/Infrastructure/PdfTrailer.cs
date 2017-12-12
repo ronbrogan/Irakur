@@ -1,20 +1,22 @@
-﻿using Irakur.Pdf.Infrastructure.PdfObjects;
+﻿using Irakur.Pdf.Infrastructure.Collections;
+using Irakur.Pdf.Infrastructure.Core;
+using Irakur.Pdf.Infrastructure.PdfObjects;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Irakur.Pdf.Infrastructure
 {
-    public class PdfTrailer
+    internal class PdfTrailer
     {
-        public PdfTrailer(UnderlyingPdf doc)
+        internal PdfTrailer(IndirectReference root, XrefTable xrefs)
         {
-            Root = doc.Catalog;
-            Size = doc.indirectObjects.Count;
+            Root = root;
+            Size = xrefs.Entries.Count;
         }
 
-        public Catalog Root { get; set; }
+        internal IndirectReference Root { get; set; }
 
-        public long Size { get; set; }
+        internal long Size { get; set; }
     }
 }

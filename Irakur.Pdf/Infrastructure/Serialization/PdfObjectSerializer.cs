@@ -14,22 +14,34 @@ namespace Irakur.Pdf.Infrastructure.Serialization
     /// <summary>
     /// The PdfObjectSerializer knows how a given object should be represented in the resulting document.
     /// </summary>
-    internal static class PdfObjectSerializer
+    internal class PdfObjectSerializer
     {
-        internal static string SerializeObject(IndirectReference reference, IPdfObject obj)
+        public PdfObjectSerializer()
+        {
+        }
+
+        internal string SerializeObject(IPdfObject obj, IndirectObjectDictionary references)
         {
             var sb = new StringBuilder();
 
-            sb.AppendLine($"{reference.Identifier} {reference.Generation} {PdfTokens.StartObject}");
+            var reference = references.Contains(obj) ? references.GetReference(obj) : (IndirectReference?)null;
 
-            sb.Append(SerializeObject((dynamic)obj));
+            if (reference.HasValue)
+            {
+                sb.AppendLine($"{reference.Value.Identifier} {reference.Value.Generation} {PdfTokens.StartObject}");
+            }
 
-            sb.AppendLine(PdfTokens.EndObject);
+            sb.Append(SerializeObject((dynamic)obj, references));
+
+            if (reference.HasValue)
+            {
+                sb.AppendLine(PdfTokens.EndObject);
+            }
 
             return sb.ToString();
         }
 
-        private static string SerializeObject(Font font)
+        private string SerializeObject(Font font, IndirectObjectDictionary references)
         {
             var sb = new StringBuilder();
             var dicSerializer = new PdfDictionarySerializer(sb);
@@ -44,27 +56,27 @@ namespace Irakur.Pdf.Infrastructure.Serialization
             return sb.ToString();
         }
 
-        private static string SerializeObject(Catalog obj)
+        private string SerializeObject(Catalog obj, IndirectObjectDictionary references)
         {
             var sb = new StringBuilder();
             var dicSerializer = new PdfDictionarySerializer(sb);
 
             dicSerializer.Start(PdfObjectType.Catalog);
 
-            dicSerializer.WriteReference(nameof(obj.Pages), obj.Pages.GetReference());
+            dicSerializer.WriteReference(nameof(obj.Pages), references.GetReference(obj.Pages));
 
             dicSerializer.End();
             return sb.ToString();
         }
 
-        private static string SerializeObject(ContentStream obj)
+        private string SerializeObject(ContentStream obj, IndirectObjectDictionary references)
         {
             var streamData = new StringBuilder();
             foreach(var text in obj.TextContent)
             {
                 streamData.AppendLine(PdfTokens.Text.Begin);
                 streamData.AppendLine($"{text.FillColor.Red} {text.FillColor.Green} {text.FillColor.Blue} {PdfTokens.Graphics.Color.Operators.SetFillRGB}");
-                streamData.AppendLine($"/{ResourceReference(text.Font.Id)} {text.FontSize} {PdfTokens.Text.StateOperators.FontSize}");
+                streamData.AppendLine($"/{ResourceReference(text.Font)} {text.FontSize} {PdfTokens.Text.StateOperators.FontSize}");
                 streamData.AppendLine($"{text.Rectangle.X} {text.Rectangle.Y} {PdfTokens.Text.PositioningOperators.MoveFromCurrent}");
                 streamData.AppendLine($"( {text.Text} ) {PdfTokens.Text.ShowingOperators.Show}");
                 streamData.AppendLine(PdfTokens.Text.End);
@@ -83,26 +95,26 @@ namespace Irakur.Pdf.Infrastructure.Serialization
             return sb.ToString();
         }
 
-        private static string SerializeObject(Page obj)
+        private string SerializeObject(Page obj, IndirectObjectDictionary references)
         {
             var sb = new StringBuilder();
             var dicSerializer = new PdfDictionarySerializer(sb);
 
             dicSerializer.Start(PdfObjectType.Page);
 
-            dicSerializer.WriteReference(nameof(obj.Parent), obj.Parent.GetReference());
+            dicSerializer.WriteReference(nameof(obj.Parent), references.GetReference(obj.Parent));
 
-            dicSerializer.WriteRaw(nameof(obj.Resources), SerializeResourceDictionary(obj.Resources));
+            dicSerializer.WriteRaw(nameof(obj.Resources), SerializeObject(obj.Resources, references));
 
-            dicSerializer.WriteRaw(nameof(obj.MediaBox), SerializeObject(obj.MediaBox));
+            dicSerializer.WriteRaw(nameof(obj.MediaBox), SerializeObject(obj.MediaBox, references));
 
-            dicSerializer.WriteReference(nameof(obj.Contents), obj.Contents.GetReference());
+            dicSerializer.WriteReference(nameof(obj.Contents), references.GetReference(obj.Contents));
 
             dicSerializer.End();
             return sb.ToString();
         }
 
-        private static string SerializeObject(PageNode node)
+        private string SerializeObject(PageNode node, IndirectObjectDictionary references)
         {
             var sb = new StringBuilder();
             var dicSerializer = new PdfDictionarySerializer(sb);
@@ -110,18 +122,23 @@ namespace Irakur.Pdf.Infrastructure.Serialization
             dicSerializer.Start(PdfObjectType.Pages);
 
             dicSerializer.WriteRaw(nameof(node.Count), node.Count);
-            dicSerializer.WriteReferences(nameof(node.Kids), node.Kids.Select(k => k.GetReference()));
+            dicSerializer.WriteReferences(nameof(node.Kids), node.Kids.Select(k => references.GetReference(k)));
 
             dicSerializer.End();
             return sb.ToString();
         }
 
-        private static string SerializeObject(Rectangle rect)
+        private string SerializeObject(Rectangle rect, IndirectObjectDictionary references)
         {
             return $"[{rect.X} {rect.Y} {rect.Width} {rect.Height}]";
         }
 
-        internal static string SerializeTrailer(PdfTrailer trailer)
+        private string SerializeObject(Name name, IndirectObjectDictionary references)
+        {
+            return $"/{name.ToString()}";
+        }
+
+        internal string SerializeTrailer(PdfTrailer trailer)
         {
             var sb = new StringBuilder();
 
@@ -131,15 +148,15 @@ namespace Irakur.Pdf.Infrastructure.Serialization
 
             dicSerializer.Start();
 
-            dicSerializer.WriteRaw("Size", trailer.Size + 1);
-            dicSerializer.WriteReference("Root", trailer.Root.GetReference());
+            dicSerializer.WriteRaw("Size", trailer.Size);
+            dicSerializer.WriteReference("Root", trailer.Root);
 
             dicSerializer.End();
 
             return sb.ToString();
         }
 
-        private static string SerializeResourceDictionary(Resources resources)
+        private string SerializeObject(Resources resources, IndirectObjectDictionary references)
         {
             var sb = new StringBuilder();
             var dicSerializer = new PdfDictionarySerializer(sb);
@@ -150,8 +167,8 @@ namespace Irakur.Pdf.Infrastructure.Serialization
                 sb.AppendLine("/Font <<");
                 for (var i = 0; i < resources.Fonts.Count; i++)
                 {
-                    var fontRef = resources.Fonts[i].GetReference();
-                    dicSerializer.WriteReference($"{ResourceReference(resources.Fonts[i].Id)}", fontRef);
+                    var fontRef = references.GetReference(resources.Fonts[i]);
+                    dicSerializer.WriteReference($"{ResourceReference(resources.Fonts[i])}", fontRef);
                 }
                 sb.AppendLine(">>");
             }
@@ -161,12 +178,12 @@ namespace Irakur.Pdf.Infrastructure.Serialization
             return sb.ToString();
         }
 
-        private static string ResourceReference(Guid id)
+        private static string ResourceReference(IPdfObject obj)
         {
-            return id.ToString().Replace("-", string.Empty);
+            return obj.Id.ToString().Replace("-", string.Empty);
         }
 
-        internal static string SerializeXrefTable(XrefTable xrefTable)
+        internal string SerializeXrefTable(XrefTable xrefTable)
         {
             var sb = new StringBuilder();
             sb.AppendLine($"0 {xrefTable.Entries.Count}");

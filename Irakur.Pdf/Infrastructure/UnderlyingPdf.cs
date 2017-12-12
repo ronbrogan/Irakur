@@ -19,13 +19,11 @@ namespace Irakur.Pdf.Infrastructure
     {
         public Catalog Catalog { get; set; }
 
-        public IndirectObjectDictionary indirectObjects { get; set; }
-
         public UnderlyingPdf()
         {
-            indirectObjects = new IndirectObjectDictionary();
+            
 
-            Catalog = new Catalog(this);
+            Catalog = new Catalog();
         }
 
         public bool ContainsBinary { get; set; }
@@ -33,7 +31,7 @@ namespace Irakur.Pdf.Infrastructure
         public void Flush(Stream stream)
         {
             ContainsBinary = true;
-
+            
             var writer = new PdfWriter(stream);
 
             writer.WriteHeader();
@@ -41,14 +39,8 @@ namespace Irakur.Pdf.Infrastructure
             if (ContainsBinary)
                 writer.WriteBinaryIndicator();
 
-            // Write IndirectObjects - record position for xref table
-            var xrefTable = new XrefTable();
-            foreach(var reference in indirectObjects.Keys)
-            {
-                writer.WriteLine();
-                var offset = writer.WriteObject(reference, indirectObjects[reference]);
-                xrefTable.Add(offset, reference);
-            }
+            // Write Body
+            var xrefTable = writer.WriteBody(this.Catalog);
 
             // Write Xrefs table - record position for startxref
             writer.WriteLine();
@@ -56,7 +48,7 @@ namespace Irakur.Pdf.Infrastructure
 
             // Write trailer
             writer.WriteLine();
-            writer.WriteTrailer(this);
+            writer.WriteTrailer(this, xrefTable);
 
             // Write startxref
             writer.WriteLine();
@@ -65,17 +57,15 @@ namespace Irakur.Pdf.Infrastructure
             // Write EOF
             writer.WriteEndOfFile();
             writer.Dispose();
-        }
-
-        
+        }        
 
         public void ProcessPages(List<PdfPage> pages)
         {
-            var pageNode = new PageNode(this);
+            var pageNode = new PageNode();
 
             foreach(var page in pages)
             {
-                var underlyingPage = new Page(this)
+                var underlyingPage = new Page()
                 {
                     Resources = new Resources()
                     {
@@ -84,7 +74,7 @@ namespace Irakur.Pdf.Infrastructure
                     Parent = pageNode
                 };
 
-                underlyingPage.Contents = new ContentStream(this)
+                underlyingPage.Contents = new ContentStream()
                 {
                     Parent = underlyingPage
                 };

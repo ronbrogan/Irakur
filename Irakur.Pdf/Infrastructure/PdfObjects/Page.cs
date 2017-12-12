@@ -5,7 +5,7 @@ namespace Irakur.Pdf.Infrastructure.PdfObjects
 {
     public class Page : PdfObject
     {
-        public Page(UnderlyingPdf doc) : base(doc)
+        public Page() : base(true)
         {
             MediaBox = new Rectangle(0, 0, 612, 792);
         }

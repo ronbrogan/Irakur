@@ -12,7 +12,7 @@ namespace Irakur.Pdf.Infrastructure.PdfObjects
 
         public List<TextContent> TextContent { get; set; }
 
-        public ContentStream(UnderlyingPdf doc) : base(doc)
+        public ContentStream() : base(true)
         {
             this.TextContent = new List<TextContent>();
         }

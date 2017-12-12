@@ -76,6 +76,16 @@ namespace Irakur.Pdf.Infrastructure.Collections
             return internalDictionary.ContainsKey(reference);
         }
 
+        public bool Contains(IPdfObject obj)
+        {
+            return guidToReferenceTable.ContainsKey(obj.Id);
+        }
+
+        public IndirectReference GetReference(IPdfObject obj)
+        {
+            return guidToReferenceTable[obj.Id];
+        }
+
         public IEnumerator GetEnumerator()
         {
             return Values.GetEnumerator();

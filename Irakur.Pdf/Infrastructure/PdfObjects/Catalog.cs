@@ -6,7 +6,7 @@ namespace Irakur.Pdf.Infrastructure.PdfObjects
 {
     public class Catalog : PdfObject
     {
-        public Catalog(UnderlyingPdf doc) : base(doc)
+        public Catalog() : base(true)
         {
         }
 

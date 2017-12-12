@@ -31,13 +31,13 @@ namespace Irakur
                 {   
                     new TextContent()
                     {
-                        Font = FontFactory.Standard(StandardFont.Helvetica, doc),
+                        Font = FontFactory.Standard(StandardFont.Helvetica),
                         Rectangle = new Rectangle(36, 750, 150),
                         Text = "This is a test PDF used for demoing features of Irakur.Pdf"
                     },
                     new TextContent()
                     {
-                        Font = FontFactory.Standard(StandardFont.Symbol, doc),
+                        Font = FontFactory.Standard(StandardFont.Symbol),
                         Rectangle = new Rectangle(36, 720, 150),
                         Text = "These are purple/pink symbols!",
                         FillColor = new Pdf.Graphics.RgbColor(255, 0, 127),

@@ -13,7 +13,7 @@ namespace Irakur.Pdf.Infrastructure.PdfObjects
 
         public Name BaseFont { get; set; }
 
-        public Font(UnderlyingPdf doc) : base(doc)
+        public Font() : base(true)
         {
 
         }
