@@ -2,6 +2,7 @@
 using Irakur.Pdf.Infrastructure.Core;
 using Irakur.Pdf.Infrastructure.PdfObjects;
 using Irakur.Pdf.Infrastructure.Serialization;
+using Irakur.Pdf.Infrastructure.Serialization.Serdes;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,21 +18,68 @@ namespace Irakur.Pdf.Infrastructure.IO
     public class PdfWriter : IDisposable
     {
         private readonly Stream baseStream;
-        private readonly PdfObjectSerializer serializer;
-        private IndirectObjectDictionary indirectObjects;
+        private readonly IterativePdfSerializer iSer;
 
         private bool leaveStreamOpen;
         public string LineEnding = "\r\n";
 
-
         internal PdfWriter(Stream stream, bool leaveOpen = false)
         {
             this.baseStream = stream;
-            this.serializer = new PdfObjectSerializer();
+            this.iSer = new IterativePdfSerializer();
             this.leaveStreamOpen = leaveOpen;
         }
 
-        public long Position {
+        public void WriteHeader()
+        {
+            this.WriteLine(PdfTokens.FileHeaderPrefix + PdfTokens.FileHeaderVersion17);
+        }
+
+        public void WriteBinaryIndicator()
+        {
+            this.WriteLine(PdfTokens.BinaryContentIndicator);
+        }
+
+        internal SerializationResult WriteBody(Catalog root)
+        {
+            this.WriteLine();
+
+            var serializeResult = iSer.SerializeTree(this, root);
+
+            return serializeResult;
+        }
+
+        internal long WriteXref(SerializationResult serializeResult)
+        {
+            var position = this.Position;
+
+            var xrefTable = new XrefTable();
+
+            foreach (var offset in serializeResult.Offsets)
+            {
+                xrefTable.Add(offset, new IndirectReference(0, 0));
+            }
+
+            this.iSer.SerializeXrefTable(this, xrefTable);
+
+            return position;
+        }
+
+        internal void WriteTrailer(UnderlyingPdf document, SerializationResult sRes)
+        {
+            var trailer = new PdfTrailer(sRes.References[document.Root], sRes.Offsets.Count);
+
+            this.iSer.SerializeTrailer(this, trailer);
+        }
+
+        public void WriteStartXref(long xrefLocation)
+        {
+            this.WriteLine(PdfTokens.StartXref);
+            this.WriteLine(xrefLocation);
+        }
+
+        public long Position
+        {
             get => this.baseStream.Position;
         }
 
@@ -53,108 +101,63 @@ namespace Irakur.Pdf.Infrastructure.IO
 
         #region Rollups 
 
-        public void WriteHeader()
-        {
-            this.WriteLine(PdfTokens.FileHeaderPrefix + PdfTokens.FileHeaderVersion17);
-        }
-
-        public void WriteBinaryIndicator()
-        {
-            this.WriteLine(PdfTokens.BinaryContentIndicator);
-        }
-
-        internal XrefTable WriteBody(Catalog catalog)
-        {
-            // Write IndirectObjects - record position for xref table
-            var xrefTable = new XrefTable();
-
-            indirectObjects = this.AccumulateReferences(catalog);
-
-            foreach(var obj in indirectObjects.Values)
-            {
-                this.WriteIndirectObject(obj, indirectObjects, xrefTable);
-            }
-
-            return xrefTable;
-        }
-
-        private IndirectObjectDictionary AccumulateReferences(IPdfObject root)
-        {
-            var indirectObjDict = new IndirectObjectDictionary(); 
-
-            var nodesToVisit = new Stack<IPdfObject>();
-            nodesToVisit.Push(root);
-
-            while (nodesToVisit.Count > 0)
-            {
-                var node = nodesToVisit.Pop();
-
-                if (node == null || indirectObjDict.Contains(node))
-                    continue;
-
-                if (node.Indirect)
-                    indirectObjDict.Add(node);
-
-                var pdfObjectProperties = node.GetType().GetProperties().Where(p =>
-                    typeof(IPdfObject).IsAssignableFrom(p.PropertyType) ||
-                    typeof(IEnumerable<IPdfObject>).IsAssignableFrom(p.PropertyType));
-
-                foreach (var objProp in pdfObjectProperties)
-                {
-                    if (objProp.PropertyType == typeof(IPdfObject) || typeof(IPdfObject).IsAssignableFrom(objProp.PropertyType))
-                    {
-                        nodesToVisit.Push((IPdfObject)objProp.GetValue(node));
-                    }
-                    else if (typeof(IEnumerable<IPdfObject>).IsAssignableFrom(objProp.PropertyType))
-                    {
-                        var collection = (IEnumerable<IPdfObject>)objProp.GetValue(node);
-
-                        foreach (var pdfObj in collection)
-                        {
-                            nodesToVisit.Push(pdfObj);
-                        }
-                    }
-                }
-            }
-
-            return indirectObjDict;
-        }
-    
-        internal long WriteIndirectObject(IPdfObject obj, IndirectObjectDictionary references, XrefTable xrefTable)
-        {
-            var position = this.Position;
-            this.WriteLine();
-            this.WriteLine(this.serializer.SerializeObject(obj, references));
-            xrefTable.Add(position, references.GetReference(obj));
-            return position;
-        }
-
-        public void WriteStartXref(long xrefLocation)
-        {
-            this.WriteLine(PdfTokens.StartXref);
-            this.WriteLine(xrefLocation);
-        }
-
-        internal long WriteXref(XrefTable xrefTable)
-        {
-            var position = this.Position;
-            this.WriteLine(PdfTokens.Xref);
-
-            this.Write(this.serializer.SerializeXrefTable(xrefTable));
-
-            return position;
-        }
-
-        internal void WriteTrailer(UnderlyingPdf document, XrefTable xrefs)
-        {
-            var trailer = new PdfTrailer(indirectObjects.GetReference(document.Catalog), xrefs);
-
-            this.WriteLine(this.serializer.SerializeTrailer(trailer));
-        }
-
         public void WriteEndOfFile()
         {
             this.WriteLine(PdfTokens.EndOfFile);
+        }
+
+        public void WriteDictionaryStart()
+        {
+            this.WriteLine("<<");
+        }
+
+        public void WriteDictionaryEnd()
+        {
+            this.WriteLine(">>");
+        }
+
+        public void WriteType(PdfObjectType type)
+        {
+            this.WriteName("Type", new Name(type.ToString()));
+        }
+
+        public void WriteSubtype(string subtype)
+        {
+            this.WriteName("Subtype", new Name(subtype));
+        }
+
+        public void WriteRaw(string key, object value)
+        {
+            this.WriteLine($"/{key} {value.ToString()}");
+        }
+
+        public void WriteName(string key, Name name)
+        {
+            this.WriteLine($"/{key} /{name}");
+        }
+
+        public void WriteReference(string key, IndirectReference reference)
+        {
+            this.WriteLine($"/{key} {reference.Identifier} {reference.Generation} R");
+        }
+
+        public void WriteReference(string key, int identifier)
+        {
+            this.WriteLine($"/{key} {identifier} 0 R");
+        }
+
+        public void WriteReferences(string key, IEnumerable<IndirectReference> references)
+        {
+            var serializedValues = references.Select(r => $"{r.Identifier} {r.Generation} R");
+
+            this.WriteLine($"/{key} [{string.Join(" ", serializedValues)}]");
+        }
+
+        public void WriteReferences(string key, IEnumerable<int> identifiers)
+        {
+            var serializedValues = identifiers.Select(r => $"{r} 0 R");
+
+            this.WriteLine($"/{key} [{string.Join(" ", serializedValues)}]");
         }
 
         #endregion

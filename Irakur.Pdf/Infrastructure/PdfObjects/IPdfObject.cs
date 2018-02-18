@@ -12,5 +12,7 @@ namespace Irakur.Pdf.Infrastructure.PdfObjects
         Guid Id { get; }
 
         bool Indirect { get; set; }
+
+        IEnumerable<IPdfObject> GetChildren();
     }
 }

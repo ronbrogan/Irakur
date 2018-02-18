@@ -5,19 +5,13 @@ using Irakur.Pdf.Infrastructure.Text;
 
 namespace Irakur.Pdf.Infrastructure.PdfObjects
 {
-    public class Name : PdfObject
+    public class Name : IPdfLiteral
     {
         private string name { get; set; }
 
-        public override PdfObjectType Type => PdfObjectType.Name;
-
-        public Name(string name) : base(false)
+        public Name(string name)
         {
-        }
-
-        public Name(Enum enumValue) : base(false)
-        {
-            this.name = enumValue.ToString();
+            this.name = name;
         }
 
         public override string ToString()

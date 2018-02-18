@@ -12,6 +12,7 @@ namespace Irakur.Pdf.Infrastructure
         internal const string StartDictionary = "<<";
         internal const string EndDictionary = ">>";
         internal const string Xref = "xref";
+        internal const string Trailer = "trailer";
         internal const string StartXref = "startxref";
         internal const string EndOfFile = "%%EOF";
         internal const string StartObject = "obj";

@@ -44,6 +44,14 @@ namespace Irakur.Pdf.Infrastructure.Collections
             }
         }
 
+        public IndirectReference this[IPdfObject obj]
+        {
+            get
+            {
+                return guidToReferenceTable[obj.Id];
+            }
+        }
+
         public ICollection<IndirectReference> Keys => internalDictionary.Keys;
 
         public ICollection<IPdfObject> Values => internalDictionary.Values;

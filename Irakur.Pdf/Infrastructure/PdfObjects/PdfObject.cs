@@ -8,8 +8,8 @@ namespace Irakur.Pdf.Infrastructure.PdfObjects
 {
     public abstract class PdfObject : IPdfObject
     {
+        public abstract PdfObjectType Type { get; }
         public Guid Id { get; }
-
         public bool Indirect { get; set; }
 
         /// <summary>
@@ -23,6 +23,6 @@ namespace Irakur.Pdf.Infrastructure.PdfObjects
             this.Indirect = indirect;
         }
 
-        public abstract PdfObjectType Type { get; }
+        public abstract IEnumerable<IPdfObject> GetChildren();
     }
 }

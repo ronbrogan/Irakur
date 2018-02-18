@@ -7,6 +7,7 @@ using Irakur.Pdf.Infrastructure.Text;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace Irakur.Pdf.Infrastructure
@@ -15,15 +16,14 @@ namespace Irakur.Pdf.Infrastructure
     /// <summary>
     /// The UnderlyingPdf object is the class that knows about the document structure. 
     /// </summary>
-    public class UnderlyingPdf
+    internal class UnderlyingPdf
     {
-        public Catalog Catalog { get; set; }
+        public Catalog Root { get; set; }
 
-        public UnderlyingPdf()
+        public UnderlyingPdf(PdfDocument input)
         {
-            
-
-            Catalog = new Catalog();
+            this.Root = new Catalog();
+            this.ProcessPages(input.Pages, true);
         }
 
         public bool ContainsBinary { get; set; }
@@ -40,15 +40,15 @@ namespace Irakur.Pdf.Infrastructure
                 writer.WriteBinaryIndicator();
 
             // Write Body
-            var xrefTable = writer.WriteBody(this.Catalog);
+            var bodyResult = writer.WriteBody(this.Root);
 
             // Write Xrefs table - record position for startxref
             writer.WriteLine();
-            var xrefLocation = writer.WriteXref(xrefTable);
+            var xrefLocation = writer.WriteXref(bodyResult);
 
             // Write trailer
             writer.WriteLine();
-            writer.WriteTrailer(this, xrefTable);
+            writer.WriteTrailer(this, bodyResult);
 
             // Write startxref
             writer.WriteLine();
@@ -59,39 +59,70 @@ namespace Irakur.Pdf.Infrastructure
             writer.Dispose();
         }        
 
-        public void ProcessPages(List<PdfPage> pages)
+        public void ProcessPages(List<PdfPage> pages, bool enableLinearization = false)
         {
-            var pageNode = new PageNode();
+            if (enableLinearization)
+                Root.Pages = this.BuildLinearizedPageTree(pages);
+            else
+                Root.Pages = this.BuildPageTree(pages);
+
+            Root.Pages.ParentCatalog = Root;
+        }
+
+        /// <summary>
+        /// We need to build the page tree based on inherited resources etc.
+        /// </summary>
+        /// <param name="pages"></param>
+        /// <returns></returns>
+        private PageNode BuildPageTree(List<PdfPage> pages)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Linearization requires that each page has it's own resource dictionary
+        /// </summary>
+        /// <param name="pages"></param>
+        /// <returns></returns>
+        private PageNode BuildLinearizedPageTree(List<PdfPage> pages)
+        {
+            var root = new PageNode();
 
             foreach(var page in pages)
             {
-                var underlyingPage = new Page()
-                {
-                    Resources = new Resources()
-                    {
-                        Fonts = new List<Font>()
-                    },
-                    Parent = pageNode
-                };
-
-                underlyingPage.Contents = new ContentStream()
-                {
-                    Parent = underlyingPage
-                };
-
-                underlyingPage.Contents.TextContent.AddRange(page.TextContent);
-
-
-                foreach(var text in underlyingPage.Contents.TextContent)
-                {
-                    // TODO: make sure these are unique
-                    underlyingPage.Resources.Fonts.Add(text.Font);
-                }
-
-                pageNode.Kids.Add(underlyingPage);
+                var pageToAdd = this.BuildPage(page);
+                pageToAdd.Resources = page.GetResources();
+                pageToAdd.Parent = root;
+                root.Kids.Add(pageToAdd);
             }
 
-            Catalog.Pages = pageNode;
+            return root;
+        }
+
+        /// <summary>
+        /// Used during page tree building to construct individual pages. Resources should be handled by the caller.
+        /// </summary>
+        /// <param name="pdfPage"></param>
+        /// <returns></returns>
+        private Page BuildPage(PdfPage pdfPage)
+        {
+            var page = new Page();
+
+            page.Contents = this.CompileContent(pdfPage);
+
+            // Fixup relationship
+            page.Contents.Parent = page;
+
+            return page;
+        }
+
+        private ContentStream CompileContent(PdfPage pdfPage)
+        {
+            var contents = new ContentStream();
+
+            contents.TextContent.AddRange(pdfPage.TextContent);
+
+            return contents;
         }
     }
 }

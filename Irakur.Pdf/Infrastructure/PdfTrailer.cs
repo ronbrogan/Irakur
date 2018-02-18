@@ -9,10 +9,10 @@ namespace Irakur.Pdf.Infrastructure
 {
     internal class PdfTrailer
     {
-        internal PdfTrailer(IndirectReference root, XrefTable xrefs)
+        internal PdfTrailer(IndirectReference root, int size)
         {
             Root = root;
-            Size = xrefs.Entries.Count;
+            Size = size;
         }
 
         internal IndirectReference Root { get; set; }

@@ -18,6 +18,9 @@ namespace Irakur.Pdf.Infrastructure.PdfObjects
 
         }
 
-
+        public override IEnumerable<IPdfObject> GetChildren()
+        {
+            yield break;
+        }
     }
 }
