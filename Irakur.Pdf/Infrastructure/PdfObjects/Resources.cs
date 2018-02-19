@@ -8,6 +8,7 @@ namespace Irakur.Pdf.Infrastructure.PdfObjects
     {
         public override PdfObjectType Type => PdfObjectType.Resources;
         public List<Font> Fonts { get; set; }
+        public List<ImageExternalObject> Images { get; set; }
 
         public Resources() : base(false)
         {
@@ -16,7 +17,15 @@ namespace Irakur.Pdf.Infrastructure.PdfObjects
 
         public override IEnumerable<IPdfObject> GetChildren()
         {
-            return Fonts;
+            foreach(var font in Fonts)
+            {
+                yield return font;
+            }
+
+            foreach(var image in Images)
+            {
+                yield return image;
+            }
         }
     }
 }

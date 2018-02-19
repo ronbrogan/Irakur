@@ -89,6 +89,11 @@ namespace Irakur.Pdf.Infrastructure.IO
             baseStream.Write(textBytes, 0, textBytes.Length);
         }
 
+        public void Write(byte[] bytes)
+        {
+            baseStream.Write(bytes, 0, bytes.Length);
+        }
+
         public void WriteLine(string text = null)
         {
             this.Write((text ?? string.Empty) + this.LineEnding);

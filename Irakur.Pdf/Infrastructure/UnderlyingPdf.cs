@@ -71,6 +71,7 @@ namespace Irakur.Pdf.Infrastructure
 
         /// <summary>
         /// We need to build the page tree based on inherited resources etc.
+        /// This tree will be used only when linearization is not desired.
         /// </summary>
         /// <param name="pages"></param>
         /// <returns></returns>
@@ -121,6 +122,7 @@ namespace Irakur.Pdf.Infrastructure
             var contents = new ContentStream();
 
             contents.TextContent.AddRange(pdfPage.TextContent);
+            contents.ImageContent.AddRange(pdfPage.ImageContent);
 
             return contents;
         }

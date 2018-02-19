@@ -13,6 +13,7 @@ namespace Irakur.Pdf
         /// Use to override the page's size, otherwise inherits from the document it's added to
         /// </summary>
         public Size SizeOverride { get; set; }
+        public List<ImageContent> ImageContent { get; set; } = new List<ImageContent>();
         public List<TextContent> TextContent { get; set; } = new List<TextContent>();
         
 
@@ -28,15 +29,22 @@ namespace Irakur.Pdf
             {
                 yield return text.Font;
             }
+
+            foreach (var image in ImageContent)
+            {
+                yield return image.Image;
+            }
         }
 
         public Resources GetResources()
         {
             var fonts = this.TextContent.Select(t => t.Font).Distinct().ToList();
+            var images = this.ImageContent.Select(i => i.Image).Distinct().ToList();
 
             return new Resources
             {
-                Fonts = fonts
+                Fonts = fonts,
+                Images = images
             };
         }
     }

@@ -31,6 +31,17 @@ namespace Irakur.Pdf.Infrastructure.Serialization.Serdes
                 writer.WriteLine(PdfTokens.EndDictionary);
             }
 
+            if (resources.Images?.Count > 0)
+            {
+                writer.WriteRaw("XObject", PdfTokens.StartDictionary);
+                for (var i = 0; i < resources.Images.Count; i++)
+                {
+                    var imgRef = references[resources.Images[i]];
+                    writer.WriteReference($"{resources.Images[i].Id.ToString().Replace("-", "")}", imgRef);
+                }
+                writer.WriteLine(PdfTokens.EndDictionary);
+            }
+
             writer.WriteDictionaryEnd();
         }
     }

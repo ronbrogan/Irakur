@@ -76,25 +76,34 @@ namespace Irakur.Pdf.Infrastructure
 
         internal static class Graphics
         {
-            internal static class Color
+            internal static class ColorOperators
             {
-
-                internal static class Operators
-                {
-                    internal const string SetStrokeRGB = "RG";
-                    internal const string SetFillRGB = "rg";
-                }
-
+                internal const string SetStrokeRGB = "RG";
+                internal const string SetFillRGB = "rg";
             }
 
-            internal static class Operands
+            internal static class StateOperators
             {
-                internal static string SaveState = "q";
-                internal static string RestoreState = "Q";
-                internal static string LineWidth = "w";
-                internal static string LineCap = "J";
-                internal static string LineJoin = "j";
+                internal static string Save = "q";
+                internal static string Restore = "Q";
+            }
+
+            internal static class LineOperators
+            {
+                internal static string Width = "w";
+                internal static string Cap = "J";
+                internal static string Join = "j";
                 internal static string miterLimit = "M";
+            }
+
+            internal static class ImageOperators
+            {
+                internal static string Draw = "Do";
+            }
+
+            internal static class TransformOperators
+            {
+                internal static string ModifyTransformationMatrix = "cm";
             }
         }
     }
